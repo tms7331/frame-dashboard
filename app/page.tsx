@@ -23,25 +23,13 @@ import sdk, {
 } from "@farcaster/frame-sdk";
 import { createStore } from 'mipd'
 
-// Register ChartJS components
+
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
 export default function FarcasterFrame() {
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
-  const [context, setContext] = useState<Context.FrameContext>();
-  const [isContextOpen, setIsContextOpen] = useState(false);
-  const [txHash, setTxHash] = useState<string | null>(null);
+  const [userContext, setUserContext] = useState<Context.FrameContext>();
 
-  const [added, setAdded] = useState(false);
-  const [notificationDetails, setNotificationDetails] =
-    useState<FrameNotificationDetails | null>(null);
-
-  const [lastEvent, setLastEvent] = useState("");
-
-  const [addFrameResult, setAddFrameResult] = useState("");
-  const [sendNotificationResult, setSendNotificationResult] = useState("");
-
-  //////////////////
   const [chartData, setChartData] = useState<ChartData | null>(null)
   const [leaders, setLeaders] = useState<Leader[]>([])
   const [news, setNews] = useState<NewsItem[]>([])
@@ -97,9 +85,9 @@ export default function FarcasterFrame() {
     },
   }
 
-
   useEffect(() => {
     const load = async () => {
+      setUserContext(await sdk.context);
       sdk.actions.ready();
     };
     if (sdk && !isSDKLoaded) {
@@ -115,6 +103,7 @@ export default function FarcasterFrame() {
       <div className="container px-4 space-y-8 pt-4">
         <div className="flex flex-col items-center text-center space-y-4">
           <h1 className="text-3xl md:text-5xl font-bold tracking-tighter text-white">Frashboard</h1>
+          <p>{JSON.stringify(userContext, null, 2)}</p>
         </div>
 
         {/* Chart Section */}
