@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
     try {
-        const { message } = await req.json();
+        const { context, message } = await req.json();
 
         if (!message) {
             return NextResponse.json({ error: "Message is required" }, { status: 400 });
@@ -22,8 +22,7 @@ export async function POST(req: Request) {
                 messages: [
                     {
                         role: "system",
-                        content:
-                            "Be concise and precise",
+                        content: context,
                     },
                     {
                         role: "user",
