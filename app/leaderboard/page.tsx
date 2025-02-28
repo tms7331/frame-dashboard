@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { MobileNav } from "@/components/mobile-nav"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -185,6 +185,17 @@ export default function LeaderboardPage() {
         }
     }
 
+    const handleCastToFarcaster = useCallback((score: number, category: string) => {
+        const text = `My ${category} trading score: ${score}! Judge my trades on Farcaster Trader`;
+        sdk.actions.openUrl(`https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`);
+    }, []);
+
+    // const handleCastToFarcaster = (score: number, category: string) => {
+    //     const text = `My ${category} trading score: ${score}! Judge my trades on Farcaster Trader`;
+    //     const url = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`;
+    //     window.open(url, '_blank');
+    // }
+
     const renderSnarkLevelSelector = (category: string) => (
         <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-300">Choose snark level</label>
@@ -252,7 +263,12 @@ export default function LeaderboardPage() {
                                 <div className="text-xl font-bold text-white">Score: {userScore.score}</div>
                                 <div className="text-sm text-gray-400 mt-1">{userScore.comment}</div>
                             </div>
-                            <Button className="bg-purple-500 hover:bg-purple-600">Cast to Farcaster</Button>
+                            <Button
+                                className="bg-purple-500 hover:bg-purple-600"
+                                onClick={() => handleCastToFarcaster(userScore.score, category)}
+                            >
+                                Cast to Farcaster
+                            </Button>
                         </div>
                     )}
 

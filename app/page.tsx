@@ -22,6 +22,7 @@ import sdk, {
   type Context,
 } from "@farcaster/frame-sdk";
 import { createStore } from 'mipd'
+import { useAccount } from "wagmi";
 
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
@@ -33,6 +34,8 @@ export default function FarcasterFrame() {
   const [chartData, setChartData] = useState<ChartData | null>(null)
   const [leaders, setLeaders] = useState<Leader[]>([])
   const [news, setNews] = useState<NewsItem[]>([])
+
+  const { address, isConnected } = useAccount();
 
   useEffect(() => {
     const loadData = async () => {
@@ -104,6 +107,7 @@ export default function FarcasterFrame() {
         <div className="flex flex-col items-center text-center space-y-4">
           <h1 className="text-3xl md:text-5xl font-bold tracking-tighter text-white">Frashboard</h1>
           <p>{JSON.stringify(userContext, null, 2)}</p>
+          <p>Address: <pre className="inline">{address}</pre></p>
         </div>
 
         {/* Chart Section */}
