@@ -4,9 +4,9 @@ import Image from "next/image"
 const navigationItems = [
     { name: "Home", href: "/" },
     { name: "Portfolio", href: "/portfolio" },
-    { name: "Alpha", href: "/alpha" },
     { name: "Leaderboard", href: "/leaderboard" },
     { name: "Agent", href: "/agent" },
+    { name: "Personalize", href: "/personalize" },
 ]
 
 export function MobileNav() {
