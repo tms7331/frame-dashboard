@@ -25,6 +25,7 @@ export type PortfolioAnalysis = {
 }
 
 export type LeaderboardEntry = {
+    category: string
     name: string
     score: number
     rank: number
@@ -41,6 +42,11 @@ export type LeaderboardData = {
     bluechip: CategoryData
     degen: CategoryData
     broke: CategoryData
+}
+
+export type NewsItem = {
+    tag: string
+    content: string
 }
 
 export type MarketReport = {
