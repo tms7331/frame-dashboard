@@ -6,58 +6,121 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
-import type { LeaderboardData } from "@/lib/types"
+import type { LeaderboardData, LeaderboardEntry } from "@/lib/types"
+import { getAllLeaderboardEntries, upsertLeaderboardEntry, dumpDummyLeaderboardEntries } from "@/lib/supabaseClient"
 
 const SNARK_LEVELS = [
-    { value: "kind", label: "Kind" },
-    { value: "rude", label: "Rude" },
     { value: "belligerent", label: "Belligerent" },
+    { value: "passive_aggressive", label: "Passive Aggressive" },
+    { value: "euphoric", label: "Euphoric" },
 ] as const
 
 type SnarkLevel = (typeof SNARK_LEVELS)[number]["value"]
 
+type UserScore = {
+    score: number
+    rank: number
+    comment: string
+} | null
+
 export default function LeaderboardPage() {
+    const [username, setUsername] = useState("user99")
     const [leaderboardData, setLeaderboardData] = useState<LeaderboardData | null>(null)
     const [worstTrade, setWorstTrade] = useState("")
     const [loading, setLoading] = useState(false)
+    const [userScores, setUserScores] = useState<Record<string, UserScore>>({
+        bluechip: null,
+        degen: null,
+        broke: null,
+    })
     const [snarkLevels, setSnarkLevels] = useState<Record<string, SnarkLevel>>({
-        bluechip: "kind",
-        degen: "kind",
-        broke: "kind",
+        bluechip: "belligerent",
+        degen: "belligerent",
+        broke: "belligerent",
     })
 
     useEffect(() => {
-        // Simulated data fetch
-        setLeaderboardData({
-            bluechip: {
-                leaders: [
-                    { name: "Alex Thompson", score: 2456, rank: 1 },
-                    { name: "Maria Garcia", score: 2100, rank: 2 },
-                    { name: "John Smith", score: 1950, rank: 3 },
-                ],
-                yourScore: 1200,
-                yourRank: 15,
-            },
-            degen: {
-                leaders: [
-                    { name: "Sarah Chen", score: 1893, rank: 1 },
-                    { name: "David Kim", score: 1654, rank: 2 },
-                    { name: "Lisa Wong", score: 1432, rank: 3 },
-                ],
-                yourScore: 980,
-                yourRank: 8,
-            },
-            broke: {
-                leaders: [
-                    { name: "Mike Johnson", score: 156, rank: 1 },
-                    { name: "Tom Wilson", score: 143, rank: 2 },
-                    { name: "Emma Davis", score: 121, rank: 3 },
-                ],
-                yourScore: 100,
-                yourRank: 5,
-            },
-        })
-    }, [])
+        const fetchLeaderboardData = async () => {
+            // await dumpDummyLeaderboardEntries();
+            const entries = await getAllLeaderboardEntries();
+
+            // Find user's entries for each category
+            const userEntries = {
+                bluechip: entries.find(entry => entry.category === 'bluechip' && entry.username === username),
+                degen: entries.find(entry => entry.category === 'degen' && entry.username === username),
+                broke: entries.find(entry => entry.category === 'broke' && entry.username === username),
+            };
+
+            // Update user scores based on found entries
+            setUserScores({
+                bluechip: userEntries.bluechip ? {
+                    score: userEntries.bluechip.score,
+                    rank: entries.filter(e => e.category === 'bluechip' && e.score > userEntries.bluechip.score).length + 1,
+                    comment: userEntries.bluechip.comment
+                } : null,
+                degen: userEntries.degen ? {
+                    score: userEntries.degen.score,
+                    rank: entries.filter(e => e.category === 'degen' && e.score > userEntries.degen.score).length + 1,
+                    comment: userEntries.degen.comment
+                } : null,
+                broke: userEntries.broke ? {
+                    score: userEntries.broke.score,
+                    rank: entries.filter(e => e.category === 'broke' && e.score > userEntries.broke.score).length + 1,
+                    comment: userEntries.broke.comment
+                } : null,
+            });
+
+            // Process entries for each category
+            const processedData: LeaderboardData = {
+                bluechip: {
+                    leaders: entries
+                        .filter(entry => entry.category === 'bluechip')
+                        .sort((a, b) => b.score - a.score)
+                        .slice(0, 3)
+                        .map((entry, index) => ({
+                            name: entry.username,
+                            score: entry.score,
+                            rank: index + 1,
+                            comment: entry.comment
+                        })),
+                    yourScore: userEntries.bluechip?.score || 0,
+                    yourRank: userEntries.bluechip ? entries.filter(e => e.category === 'bluechip' && e.score > userEntries.bluechip.score).length + 1 : 0,
+                },
+                degen: {
+                    leaders: entries
+                        .filter(entry => entry.category === 'degen')
+                        .sort((a, b) => b.score - a.score)
+                        .slice(0, 3)
+                        .map((entry, index) => ({
+                            name: entry.username,
+                            score: entry.score,
+                            rank: index + 1,
+                            comment: entry.comment
+                        })),
+                    yourScore: userEntries.degen?.score || 0,
+                    yourRank: userEntries.degen ? entries.filter(e => e.category === 'degen' && e.score > userEntries.degen.score).length + 1 : 0,
+                },
+                broke: {
+                    leaders: entries
+                        .filter(entry => entry.category === 'broke')
+                        .sort((a, b) => b.score - a.score)
+                        .slice(0, 3)
+                        .map((entry, index) => ({
+                            name: entry.username,
+                            score: entry.score,
+                            rank: index + 1,
+                            comment: entry.comment
+                        })),
+                    yourScore: userEntries.broke?.score || 0,
+                    yourRank: userEntries.broke ? entries.filter(e => e.category === 'broke' && e.score > userEntries.broke.score).length + 1 : 0,
+                },
+            };
+
+            setLeaderboardData(processedData);
+        };
+
+        fetchLeaderboardData();
+    }, [username]);
 
     const handleSnarkLevelChange = (category: string, value: SnarkLevel) => {
         setSnarkLevels((prev) => ({
@@ -66,18 +129,68 @@ export default function LeaderboardPage() {
         }))
     }
 
+    const handleJudgeMe = async (category: string) => {
+        setLoading(true)
+        try {
+            const context = `You are judging someone's crypto portfolio. Be ${snarkLevels[category]} in your response. Keep your response under 100 characters.`;
+            const message = category === "broke" ? worstTrade : "ETH: 43";
+
+            const response = await fetch("/api/chatgpt", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ context, message }),
+            });
+
+            const data = await response.json();
+            const score = Math.floor(Math.random() * 1000);
+
+            // Update Supabase with the new score and comment
+            await upsertLeaderboardEntry({
+                username,
+                category,
+                score,
+                comment: data.response,
+                wallet_address: "0x1234567890123456789012345678901234567890"
+            });
+
+            setUserScores((prev) => ({
+                ...prev,
+                [category]: {
+                    score: score,
+                    rank: Math.floor(Math.random() * 20) + 1,
+                    comment: data.response,
+                },
+            }))
+        } catch (error) {
+            console.error("Failed to get AI response:", error);
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const renderSnarkLevelSelector = (category: string) => (
         <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-300">Choose snark level</label>
             <RadioGroup
                 value={snarkLevels[category]}
                 onValueChange={(value) => handleSnarkLevelChange(category, value as SnarkLevel)}
-                className="flex gap-4"
+                className="flex gap-2"
             >
                 {SNARK_LEVELS.map((level) => (
-                    <div key={level.value} className="flex items-center space-x-2">
-                        <RadioGroupItem value={level.value} id={`${category}-${level.value}`} />
-                        <Label htmlFor={`${category}-${level.value}`} className="text-white font-medium">
+                    <div
+                        key={level.value}
+                        className="flex items-center space-x-2 px-4 py-3 rounded-md border border-gray-700 
+              [&:has(:checked)]:bg-purple-500/20 [&:has(:checked)]:border-purple-500 
+              hover:bg-gray-700/30 transition-colors cursor-pointer"
+                    >
+                        <RadioGroupItem
+                            value={level.value}
+                            id={`${category}-${level.value}`}
+                            className="border-gray-500 text-purple-500"
+                        />
+                        <Label htmlFor={`${category}-${level.value}`} className="text-white font-medium cursor-pointer">
                             {level.label}
                         </Label>
                     </div>
@@ -88,6 +201,72 @@ export default function LeaderboardPage() {
 
     if (!leaderboardData) return null
 
+    const renderCategory = (title: string, category: keyof typeof userScores) => {
+        const data = leaderboardData[category]
+        const userScore = userScores[category]
+        const isBroke = category === "broke"
+
+        return (
+            <div className="bg-gray-800/50 rounded-lg p-6 space-y-6">
+                <h2 className="text-2xl font-bold text-white">{title} Traders</h2>
+
+                <div className="space-y-4">
+                    {data.leaders.map((leader: LeaderboardEntry, index: number) => (
+                        <div key={index} className="flex justify-between items-center bg-gray-700/50 rounded-lg p-4">
+                            <div className="flex items-center gap-4">
+                                <span className="text-xl font-bold text-purple-400">#{leader.rank}</span>
+                                <div>
+                                    <span className="text-white">{leader.name}</span>
+                                    <p className="text-sm text-gray-400 mt-1">
+                                        {leader.comment}
+                                    </p>
+                                </div>
+                            </div>
+                            <span className="text-gray-300">Score: {leader.score}</span>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="border-t border-gray-700 pt-6 space-y-4">
+                    <h3 className="text-xl font-semibold text-white">Your Score</h3>
+
+                    {userScore && (
+                        <div className="flex justify-between items-center bg-gray-700/30 rounded-lg p-4">
+                            <div className="space-y-1">
+                                <div className="text-gray-400">Current Rank: #{userScore.rank}</div>
+                                <div className="text-xl font-bold text-white">Score: {userScore.score}</div>
+                                <div className="text-sm text-gray-400 mt-1">{userScore.comment}</div>
+                            </div>
+                            <Button className="bg-purple-500 hover:bg-purple-600">Cast to Farcaster</Button>
+                        </div>
+                    )}
+
+                    {isBroke && (
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-300">Describe your worst trade</label>
+                            <Textarea
+                                value={worstTrade}
+                                onChange={(e) => setWorstTrade(e.target.value)}
+                                placeholder="It all started when I aped into..."
+                                className="min-h-[100px] bg-gray-700/30 border-gray-600 text-white"
+                            />
+                        </div>
+                    )}
+
+                    {renderSnarkLevelSelector(category)}
+
+                    <Button
+                        onClick={() => handleJudgeMe(category)}
+                        disabled={loading || (isBroke && !worstTrade)}
+                        className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600"
+                    >
+                        Judge Me
+                    </Button>
+                </div>
+            </div>
+        )
+    }
+
     return (
         <div className="min-h-screen w-full bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900">
             <MobileNav />
@@ -96,120 +275,9 @@ export default function LeaderboardPage() {
                 <h1 className="text-3xl md:text-4xl font-bold text-white text-center">Leaderboard</h1>
 
                 <div className="grid gap-8">
-                    {/* Bluechip Section */}
-                    <div className="bg-gray-800/50 rounded-lg p-6 space-y-6">
-                        <h2 className="text-2xl font-bold text-white">Bluechip Traders</h2>
-
-                        <div className="space-y-4">
-                            {leaderboardData.bluechip.leaders.map((leader, index) => (
-                                <div key={index} className="flex justify-between items-center bg-gray-700/50 rounded-lg p-4">
-                                    <div className="flex items-center gap-4">
-                                        <span className="text-xl font-bold text-purple-400">#{leader.rank}</span>
-                                        <span className="text-white">{leader.name}</span>
-                                    </div>
-                                    <span className="text-gray-300">Score: {leader.score}</span>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="border-t border-gray-700 pt-6 space-y-4">
-                            <h3 className="text-xl font-semibold text-white">Your Score</h3>
-                            <div className="flex justify-between items-center bg-gray-700/30 rounded-lg p-4">
-                                <div className="space-y-1">
-                                    <div className="text-gray-400">Current Rank: #{leaderboardData.bluechip.yourRank}</div>
-                                    <div className="text-xl font-bold text-white">Score: {leaderboardData.bluechip.yourScore}</div>
-                                </div>
-                                <Button className="bg-purple-500 hover:bg-purple-600">Cast to Farcaster</Button>
-                            </div>
-
-                            {renderSnarkLevelSelector("bluechip")}
-
-                            <Button className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600">
-                                Judge Me
-                            </Button>
-                        </div>
-                    </div>
-
-                    {/* Degen Section */}
-                    <div className="bg-gray-800/50 rounded-lg p-6 space-y-6">
-                        <h2 className="text-2xl font-bold text-white">Degen Traders</h2>
-
-                        <div className="space-y-4">
-                            {leaderboardData.degen.leaders.map((leader, index) => (
-                                <div key={index} className="flex justify-between items-center bg-gray-700/50 rounded-lg p-4">
-                                    <div className="flex items-center gap-4">
-                                        <span className="text-xl font-bold text-purple-400">#{leader.rank}</span>
-                                        <span className="text-white">{leader.name}</span>
-                                    </div>
-                                    <span className="text-gray-300">Score: {leader.score}</span>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="border-t border-gray-700 pt-6 space-y-4">
-                            <h3 className="text-xl font-semibold text-white">Your Score</h3>
-                            <div className="flex justify-between items-center bg-gray-700/30 rounded-lg p-4">
-                                <div className="space-y-1">
-                                    <div className="text-gray-400">Current Rank: #{leaderboardData.degen.yourRank}</div>
-                                    <div className="text-xl font-bold text-white">Score: {leaderboardData.degen.yourScore}</div>
-                                </div>
-                                <Button className="bg-purple-500 hover:bg-purple-600">Cast to Farcaster</Button>
-                            </div>
-
-                            {renderSnarkLevelSelector("degen")}
-
-                            <Button className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600">
-                                Judge Me
-                            </Button>
-                        </div>
-                    </div>
-
-                    {/* Broke Section */}
-                    <div className="bg-gray-800/50 rounded-lg p-6 space-y-6">
-                        <h2 className="text-2xl font-bold text-white">Broke Traders</h2>
-
-                        <div className="space-y-4">
-                            {leaderboardData.broke.leaders.map((leader, index) => (
-                                <div key={index} className="flex justify-between items-center bg-gray-700/50 rounded-lg p-4">
-                                    <div className="flex items-center gap-4">
-                                        <span className="text-xl font-bold text-purple-400">#{leader.rank}</span>
-                                        <span className="text-white">{leader.name}</span>
-                                    </div>
-                                    <span className="text-gray-300">Score: {leader.score}</span>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="border-t border-gray-700 pt-6 space-y-4">
-                            <h3 className="text-xl font-semibold text-white">Your Score</h3>
-                            <div className="flex justify-between items-center bg-gray-700/30 rounded-lg p-4">
-                                <div className="space-y-1">
-                                    <div className="text-gray-400">Current Rank: #{leaderboardData.broke.yourRank}</div>
-                                    <div className="text-xl font-bold text-white">Score: {leaderboardData.broke.yourScore}</div>
-                                </div>
-                                <Button className="bg-purple-500 hover:bg-purple-600">Cast to Farcaster</Button>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-300">Describe your worst trade</label>
-                                <Textarea
-                                    value={worstTrade}
-                                    onChange={(e) => setWorstTrade(e.target.value)}
-                                    placeholder="It all started when I aped into..."
-                                    className="min-h-[100px] bg-gray-700/30 border-gray-600 text-white"
-                                />
-                            </div>
-
-                            {renderSnarkLevelSelector("broke")}
-
-                            <Button
-                                className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600"
-                                disabled={!worstTrade}
-                            >
-                                Judge Me
-                            </Button>
-                        </div>
-                    </div>
+                    {renderCategory("Bluechip", "bluechip")}
+                    {renderCategory("Degen", "degen")}
+                    {renderCategory("Broke", "broke")}
                 </div>
             </div>
         </div>
