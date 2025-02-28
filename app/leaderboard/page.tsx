@@ -8,6 +8,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import type { LeaderboardData, LeaderboardEntry } from "@/lib/types"
 import { getAllLeaderboardEntries, upsertLeaderboardEntry, dumpDummyLeaderboardEntries } from "@/lib/supabaseClient"
+import sdk, { type Context } from "@farcaster/frame-sdk"
 
 const SNARK_LEVELS = [
     { value: "belligerent", label: "Belligerent" },
@@ -38,6 +39,8 @@ export default function LeaderboardPage() {
         degen: "belligerent",
         broke: "belligerent",
     })
+    const [isSDKLoaded, setIsSDKLoaded] = useState(false)
+    const [userContext, setUserContext] = useState<Context.FrameContext>()
 
     useEffect(() => {
         const fetchLeaderboardData = async () => {
@@ -121,6 +124,18 @@ export default function LeaderboardPage() {
 
         fetchLeaderboardData();
     }, [username]);
+
+    // Refactor and store user context somewhere instead?
+    useEffect(() => {
+        const load = async () => {
+            const context = await sdk.context;
+            setUsername(context?.user.username || "");
+        };
+        if (sdk && !isSDKLoaded) {
+            setIsSDKLoaded(true);
+            load();
+        }
+    }, [isSDKLoaded]);
 
     const handleSnarkLevelChange = (category: string, value: SnarkLevel) => {
         setSnarkLevels((prev) => ({
@@ -273,7 +288,6 @@ export default function LeaderboardPage() {
 
             <div className="container px-4 py-8 space-y-8">
                 <h1 className="text-3xl md:text-4xl font-bold text-white text-center">Leaderboard</h1>
-
                 <div className="grid gap-8">
                     {renderCategory("Bluechip", "bluechip")}
                     {renderCategory("Degen", "degen")}
