@@ -220,7 +220,7 @@ export default function LeaderboardPage() {
     }
 
     const handleCastToFarcaster = useCallback((score: number, comment: string, category: string) => {
-        const text = `My ${category} trading is ${comment} and my score is ${score}!`;
+        const text = `My ${category} trading evaluation is: ${comment} And my score is ${score}!`;
         sdk.actions.openUrl(`https://warpcast.com/~/compose?text=${encodeURIComponent(text)}&embeds[]=https://pulseboardai.framestop.xyz`);
     }, []);
 
