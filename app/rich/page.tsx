@@ -23,20 +23,25 @@ export const metadata: Metadata = {
         // Frame metadata
         'fc:frame': 'next',
         'fc:frame:image': 'https://pulseboardai.framestop.xyz/frame-image.png',
-        'fc:frame:button:1:title': 'Start AI Chat',
-        'fc:frame:button:1:action': 'launch_frame',
-        'fc:frame:button:1:name': 'Pulseboard AI',
-        'fc:frame:button:1:url': 'https://pulseboardai.framestop.xyz/chat',
-        'fc:frame:button:1:splash_image': 'https://pulseboardai.framestop.xyz/splash.png',
-        'fc:frame:button:1:splash_background': '#000000',
+        'fc:frame:button:1': 'Start AI Chat',
+        'fc:frame:post_url': 'https://pulseboardai.framestop.xyz/api/frame',
     },
 }
 
+// Add head tags directly
 export default function Page() {
     return (
-        <main>
-            <h1>Hello! AI</h1>
-            <p>Hello! Supercharge your Farcaster experience with Pulseboard AI</p>
-        </main>
+        <>
+            <head>
+                <meta property="fc:frame" content="next" />
+                <meta property="fc:frame:image" content="https://pulseboardai.framestop.xyz/next.png" />
+                <meta property="fc:frame:button:1" content="Start AI Chat" />
+                <meta property="fc:frame:post_url" content="https://pulseboardai.framestop.xyz/api/frame" />
+            </head>
+            <main>
+                <h1>Hello! AI</h1>
+                <p>Hello! Supercharge your Farcaster experience with Pulseboard AI</p>
+            </main>
+        </>
     )
 }

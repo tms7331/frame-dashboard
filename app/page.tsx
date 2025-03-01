@@ -185,6 +185,9 @@ export default function FarcasterFrame() {
       const username = userContext_?.user.username || "";
       const userPrompt = await getUserPrompt(username);
 
+      const result = await sdk.actions.addFrame();
+      console.log("result", result)
+
       let newsData: NewsItem[];
       if (!userPrompt) {
         // If no user prompt, use "-" as username
