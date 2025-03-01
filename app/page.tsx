@@ -308,7 +308,7 @@ export default function FarcasterFrame() {
           <div className="grid gap-3">
             {news.map((item, index) => (
               <div key={index} className="bg-gray-800/50 rounded-lg p-4">
-                <h3 className="text-white font-semibold">{item.tag}</h3>
+                <h3 className="text-white font-semibold">{item.tag.charAt(0).toUpperCase() + item.tag.slice(1)}</h3>
                 <p className="text-gray-400 text-sm mt-1">{item.content}</p>
               </div>
             ))}

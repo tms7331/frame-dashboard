@@ -126,7 +126,9 @@ export default function PortfolioPage() {
 
         setCasting(true)
         try {
-            const castLink = `https://warpcast.com/~/compose?text=${analysis}`
+
+            const encodedText = encodeURIComponent(analysis);
+            const castLink = `https://warpcast.com/~/compose?text=${encodedText}`;
             openUrl(castLink)
         } catch (error) {
             console.error("Error casting haiku:", error)
@@ -201,8 +203,8 @@ export default function PortfolioPage() {
                 {/* Analysis Section */}
                 <Card className="p-6 bg-gray-800/50 border-gray-700">
                     <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <h2 className="text-xl font-bold text-white">Analysis of the Day</h2>
+                        <div className="flex flex-col gap-4">
+                            <h2 className="text-xl font-bold text-white">AI Meme Analysis of the Day</h2>
                             <Button
                                 onClick={handleAnalyze}
                                 disabled={loading}
