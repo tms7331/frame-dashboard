@@ -5,8 +5,15 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 
+export interface Report {
+    id?: number;      // Auto-generated ID
+    address: string;
+    summary: string;
+    report: string;
+}
+
 export interface UserPrompt {
-    id?: number;        // Optional auto-generated ID
+    id?: number;
     username: string;
     prompt: string;
 }
@@ -156,6 +163,35 @@ export async function dumpDummyLeaderboardEntries() {
     const { data, error } = await supabase
         .from('leaderboard')
         .insert(entries);
+
+    if (error) {
+        throw error;
+    }
+    return data;
+}
+
+export async function getReport(address: string): Promise<Report | null> {
+    // using lowercase to avoid weird issues
+    const addr = address.toLowerCase();
+    const { data, error } = await supabase
+        .from('report')
+        .select('*')
+        .eq('address', addr)
+        .maybeSingle();
+
+    if (error) {
+        throw error;
+    }
+    return data;
+}
+
+export async function upsertReport(address: string, summary: string, reportText: string): Promise<Report> {
+    // using lowercase to avoid weird issues
+    const addr = address.toLowerCase();
+    const { data, error } = await supabase
+        .from('report')
+        .upsert({ address: addr, summary, report: reportText }, { onConflict: 'address' })
+        .single();
 
     if (error) {
         throw error;
