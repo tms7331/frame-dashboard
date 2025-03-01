@@ -33,7 +33,7 @@ async function buildReport(portfolioString: string) {
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message: portfolioString, context: perplexityPortfolioReportPrompt }),
+        body: JSON.stringify({ message: portfolioString, context: perplexityPortfolioReportPrompt, model: "sonar-deep-research" }),
     });
     const data = await response.json();
     return data.response;

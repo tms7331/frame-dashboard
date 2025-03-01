@@ -8,8 +8,16 @@ const config = new Configuration({
 
 const client = new NeynarAPIClient(config);
 
-export async function GET() {
+
+export async function GET(req: Request) {
     try {
+        const { searchParams } = new URL(req.url);
+        const fid = searchParams.get('fid');
+
+        if (!fid) {
+            return NextResponse.json({ error: "fid is required" }, { status: 400 });
+        }
+
         /*
         // Trending
         const feed = await client.fetchFeed({
@@ -26,8 +34,7 @@ export async function GET() {
             channelId,
         });
         */
-        const vitalikFid = 5650;
-        const feed = await client.fetchFeed({ feedType: FeedType.Following, fid: vitalikFid });
+        const feed = await client.fetchFeed({ feedType: FeedType.Following, fid: parseInt(fid) });
         return NextResponse.json(feed);
     } catch (error) {
         return NextResponse.json({ error: "Failed to fetch trending posts" }, { status: 500 });
