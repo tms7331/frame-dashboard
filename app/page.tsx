@@ -191,7 +191,7 @@ export default function FarcasterFrame() {
 
         {/* Leaderboard Section */}
         <div className="grid gap-4">
-          <h2 className="text-xl font-semibold text-white">Leaderboard</h2>
+          <h2 className="text-xl font-semibold text-white">Leaderboard Champions</h2>
           <div className="grid gap-3">
             {leaders.map((leader, index) => (
               <div key={index} className="bg-gray-800/50 rounded-lg p-4 flex flex-col gap-1">

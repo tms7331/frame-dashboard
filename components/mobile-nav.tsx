@@ -1,44 +1,53 @@
 import Link from "next/link"
 import Image from "next/image"
 
-const navigationItems = [
+const WALLET_ADDRESS = "0x1234...5678" // This would come from your wallet connection
+
+const bottomNavItems = [
     { name: "Home", href: "/" },
     { name: "Portfolio", href: "/portfolio" },
     { name: "Leaderboard", href: "/leaderboard" },
-    { name: "Agent", href: "/agent" },
-    { name: "Personalize", href: "/personalize" },
 ]
 
 export function MobileNav() {
     return (
         <div className="w-full bg-gray-900/80 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-700">
-            <div className="flex items-center justify-between px-4">
-                <div className="overflow-x-auto flex-1">
-                    <nav className="flex min-w-max py-3 gap-6">
-                        {navigationItems.map((item) => (
-                            <Link
-                                key={item.name}
-                                href={item.href}
-                                className="text-white font-medium px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
-                            >
-                                {item.name}
-                            </Link>
-                        ))}
-                    </nav>
-                </div>
+            {/* Top Row */}
+            <div className="flex items-center justify-between px-3 py-1.5 border-b border-gray-700/50">
+                <Link
+                    href="/personalize"
+                    className="text-sm text-gray-300 hover:text-white font-medium px-2 py-1 rounded-md hover:bg-white/10 transition-colors border border-gray-500/30 hover:border-gray-400/50"
+                >
+                    Personalize
+                </Link>
 
-                {/* Profile Picture */}
-                <div className="pl-4 flex items-center">
-                    <button className="w-10 h-10 rounded-full overflow-hidden border-2 border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-900">
+                <div className="flex items-center gap-3">
+                    <span className="text-gray-300 font-mono text-xs">{WALLET_ADDRESS}</span>
+                    <button className="w-6 h-6 rounded-full overflow-hidden border border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-1 focus:ring-offset-gray-900">
                         <Image
-                            src="/placeholder.svg?height=40&width=40"
+                            src="/placeholder.svg?height=24&width=24"
                             alt="Profile"
-                            width={40}
-                            height={40}
+                            width={24}
+                            height={24}
                             className="w-full h-full object-cover"
                         />
                     </button>
                 </div>
+            </div>
+
+            {/* Bottom Row */}
+            <div className="px-3 py-1.5">
+                <nav className="flex justify-center gap-3">
+                    {bottomNavItems.map((item) => (
+                        <Link
+                            key={item.name}
+                            href={item.href}
+                            className="text-sm text-white font-medium px-3 py-1 rounded-md bg-white/10 hover:bg-white/20 transition-colors"
+                        >
+                            {item.name}
+                        </Link>
+                    ))}
+                </nav>
             </div>
         </div>
     )
