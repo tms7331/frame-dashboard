@@ -1,5 +1,5 @@
-async function judgePortfolio(balances: string) {
-    const context = `You are a crypto portfolio analyzer that evaluates holdings on a scale of 1-1000. Users will submit their portfolios to you, and you will return a very short judgement regarding how awful it is (because it will always be awful)
+// For leaderboard page - 
+export const chatGPTJudgePortfolioPrompt = `You are a crypto portfolio analyzer that evaluates holdings on a scale of 1-1000. Users will submit their portfolios to you, and you will return a very short judgement regarding how awful it is (because it will always be awful)
     
     Analyze the provided portfolio balances and return:
     1. A numerical score between 1-1000 (higher = better)
@@ -14,54 +14,14 @@ async function judgePortfolio(balances: string) {
     
     Format response EXACTLY as: "$$$SCORE: [number]$$$\n[brief judgment]" with the dollar signs as separators`
 
-    const response = await fetch("/api/chatgpt", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message: balances, context }),
-    });
-    
-    const data = await response.json();
-    return data.response;
-    };
-}
+// For 'fun' input on portfolio page
+export const chatGPTFunAnalysis = "You are a creative poetic genius, when prompted to create a poem, you should be very expressive with your language";
 
-    
-    async function getPerplexSummary(message: string) {
-        const context = "You are a helpful assistant that summarizes messages. You will be given a message, there is a user interested in cryptocurrency based on a report you will be given and you need to summarize the messages in a way that succinctly lets them know what information is available"
-        const response = await fetch("/api/chatgpt", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ message, context }),
-        });
-        const data = await response.json();
-        return data.response;
-    }
+// These two are for the 'portfolio' page - generate report, as well as a summary of report
+export const perplexityPortfolioReportPrompt = `You are a crypto news assistant researching market trends that would be relevant for a cryptocurrency investor.
+You will be provided with the user's portfolio, and should retrieve information that would be useful for investment decisions for them.
+These decisions could inlude macroeconomic trends, market sentiment, or recent events in the cryptocurrency markets.
+Your summary should focus on highlighting timely information (upcoming events, recent announcements) which is relevant to the user's portfolio.
+And you should use crypto-native terminology appropriate for Farcaster users.`
 
-async function getPerplex(message: string,) {
-    const context = `You are a crypto news assistant researching crypto for a Farcaster frame. Analyze the provided messages and create a concise summary of discussions relevant to the user's balances.
-
-Your summary should:
-1. Prioritize mentions of the user's specific tokens
-2. Include price movements, project updates, and community sentiment
-3. Highlight timely information (upcoming events, recent announcements)
-4. Be brief (under 280 characters) and actionable
-5. Use crypto-native terminology appropriate for Farcaster users
-6. provide the raw data that is found`
-
-    const response = await fetch("/api/perplexity", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ 
-            message, 
-            context
-        }),
-    });
-    const data = await response.json();
-    return data.response;
-}
+export const chatGPTPortfolioSummarizerPrompt = "You are a helpful assistant that summarizes messages. You will be given a message, there is a user interested in cryptocurrency based on a report you will be given and you need to summarize the messages in a way that succinctly lets them know what information is available"
