@@ -24,7 +24,7 @@ import sdk, {
 // import { createStore } from 'mipd'
 import { useAccount } from "wagmi";
 import { useSetAtom } from 'jotai'
-import { walletAddressAtom, profileImageAtom } from '@/lib/atoms'
+import { walletAddressAtom, profileImageAtom, portfolioUrlAtom } from '@/lib/atoms'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
@@ -67,6 +67,7 @@ export default function FarcasterFrame() {
   const { address, isConnected } = useAccount();
   const setWalletAddress = useSetAtom(walletAddressAtom)
   const setProfileImage = useSetAtom(profileImageAtom)
+  const setPortfolioUrl = useSetAtom(portfolioUrlAtom)
 
   useEffect(() => {
     const loadData = async () => {
@@ -149,6 +150,7 @@ export default function FarcasterFrame() {
       // Truncate the address to the first 6 and last 4 characters
       const truncatedAddress = address.slice(0, 6) + "..." + address.slice(-4)
       setWalletAddress(truncatedAddress)
+      setPortfolioUrl(`/portfolio/${address}`)
     }
   }, [address, setWalletAddress])
 

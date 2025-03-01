@@ -1,17 +1,19 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useAtomValue } from 'jotai'
-import { walletAddressAtom, profileImageAtom } from '@/lib/atoms'
+import { walletAddressAtom, profileImageAtom, portfolioUrlAtom } from '@/lib/atoms'
 
-const bottomNavItems = [
+const bottomNavItems = (portfolioUrl: string) => [
     { name: "News", href: "/" },
-    { name: "Portfolio", href: "/portfolio" },
+    // { name: "Portfolio", href: "/portfolio" },
+    { name: "Portfolio", href: portfolioUrl },
     { name: "Leaderboard", href: "/leaderboard" },
 ]
 
 export function MobileNav() {
     const walletAddress = useAtomValue(walletAddressAtom)
     const profileImage = useAtomValue(profileImageAtom)
+    const portfolioUrl = useAtomValue(portfolioUrlAtom)
 
     return (
         <div className="w-full bg-gray-900/80 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-700">
@@ -41,7 +43,7 @@ export function MobileNav() {
             {/* Bottom Row */}
             <div className="px-3 py-1.5">
                 <nav className="flex justify-center gap-3">
-                    {bottomNavItems.map((item) => (
+                    {bottomNavItems(portfolioUrl).map((item) => (
                         <Link
                             key={item.name}
                             href={item.href}

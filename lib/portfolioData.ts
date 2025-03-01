@@ -3,7 +3,18 @@ import { DebankToken } from "./types";
 export async function getPortfolio(address: string) {
     const response = await fetch(`/api/debank?address=${address}`);
     const data = await response.json();
-    const filteredBalances = data.filter((balance: any) => balance.price * balance.amount > 20);
+    console.log("DATA", data)
+    // {
+    //     "errors": {
+    //         "id": "Address when sending a str, it must be a hex string. Got: '0xc521...4636'"
+    //     },
+    //     "message": "Input payload validation failed"
+    // }
+    if (data.errors) {
+        return [];
+    }
+    // Also filterer for "isVerified" flag being true
+    const filteredBalances = data.filter((balance: any) => balance.price * balance.amount > 20 && balance.is_verified);
     return filteredBalances;
 }
 
