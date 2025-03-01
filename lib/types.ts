@@ -28,6 +28,7 @@ export type LeaderboardEntry = {
     score: number
     rank: number
     comment: string
+    fid: string
 }
 
 export type CategoryData = {

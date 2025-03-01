@@ -277,10 +277,25 @@ export default function FarcasterFrame() {
             {leaders.map((leader, index) => (
               <div key={index} className="bg-gray-800/50 rounded-lg p-4 flex flex-col gap-1">
                 <div className="flex justify-between items-center">
-                  <span className="text-purple-400 font-semibold">{leader.category.charAt(0).toUpperCase() + leader.category.slice(1)}</span>
+                  <div className="text-gray-300">
+                    {leader.username ? (
+                      <>
+                        <button
+                          onClick={() => leader.fid && sdk.actions.viewProfile({ fid: parseInt(leader.fid) })}
+                          className="text-purple-400 hover:text-purple-300"
+                        >
+                          @{leader.username}
+                        </button>
+                        <span> is </span>
+                        <span className="text-purple-400">{leader.category.charAt(0).toUpperCase() + leader.category.slice(1)}</span>
+                        <span> champion</span>
+                      </>
+                    ) : (
+                      <span>{leader.name}</span>
+                    )}
+                  </div>
                   <span className="text-white font-bold">Score: {leader.score}</span>
                 </div>
-                <span className="text-gray-300">{leader.name}</span>
                 <span className="text-gray-400 text-sm">{leader.comment}</span>
               </div>
             ))}

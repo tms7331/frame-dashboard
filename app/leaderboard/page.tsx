@@ -7,10 +7,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import type { LeaderboardData, LeaderboardEntry, SnarkLevel, LeaderboardCategory, DebankToken } from "@/lib/types"
-import { getAllLeaderboardEntries, upsertLeaderboardEntry, dumpDummyLeaderboardEntries } from "@/lib/supabaseClient"
+import { getAllLeaderboardEntries, upsertLeaderboardEntry } from "@/lib/supabaseClient"
 import sdk, { type Context } from "@farcaster/frame-sdk"
 import { getLeaderboardJudgementPrompt } from "@/lib/prompts"
 import { getPortfolio, getPortfolioString } from "@/lib/portfolioData"
+import { useAtomValue } from 'jotai'
+import { walletAddressAtom } from "@/lib/atoms"
 
 const SNARK_LEVELS = [
     { value: "belligerent", label: "Belligerent" },
@@ -24,8 +26,11 @@ type UserScore = {
     comment: string
 } | null
 
+
 export default function LeaderboardPage() {
     const [username, setUsername] = useState("")
+    // 5650 is vitalik's fid, shouldn't ever fail though
+    const [fid, setFid] = useState<number>(5650)
     const [leaderboardData, setLeaderboardData] = useState<LeaderboardData | null>(null)
     const [worstTrade, setWorstTrade] = useState("")
     const [loading, setLoading] = useState(false)
@@ -41,16 +46,16 @@ export default function LeaderboardPage() {
     })
     const [isSDKLoaded, setIsSDKLoaded] = useState(false)
     const [portfolio, setPortfolio] = useState<DebankToken[]>([])
+    const walletAddress = useAtomValue(walletAddressAtom)
 
     useEffect(() => {
         const fetchPortfolio = async () => {
-            const portfolio = await getPortfolio(username)
+            const portfolio = await getPortfolio(walletAddress)
             setPortfolio(portfolio)
         }
         fetchPortfolio()
 
         const fetchLeaderboardData = async () => {
-            // await dumpDummyLeaderboardEntries();
             const entries = await getAllLeaderboardEntries();
 
             // Find user's entries for each category
@@ -90,7 +95,8 @@ export default function LeaderboardPage() {
                             name: entry.username,
                             score: entry.score,
                             rank: index + 1,
-                            comment: entry.comment
+                            comment: entry.comment,
+                            fid: entry.fid
                         })),
                     yourScore: userEntries.bluechip?.score || 0,
                     yourRank: userEntries.bluechip ? entries.filter(e => e.category === 'bluechip' && e.score > userEntries.bluechip.score).length + 1 : 0,
@@ -104,7 +110,8 @@ export default function LeaderboardPage() {
                             name: entry.username,
                             score: entry.score,
                             rank: index + 1,
-                            comment: entry.comment
+                            comment: entry.comment,
+                            fid: entry.fid
                         })),
                     yourScore: userEntries.degen?.score || 0,
                     yourRank: userEntries.degen ? entries.filter(e => e.category === 'degen' && e.score > userEntries.degen.score).length + 1 : 0,
@@ -118,7 +125,8 @@ export default function LeaderboardPage() {
                             name: entry.username,
                             score: entry.score,
                             rank: index + 1,
-                            comment: entry.comment
+                            comment: entry.comment,
+                            fid: entry.fid
                         })),
                     yourScore: userEntries.broke?.score || 0,
                     yourRank: userEntries.broke ? entries.filter(e => e.category === 'broke' && e.score > userEntries.broke.score).length + 1 : 0,
@@ -136,6 +144,7 @@ export default function LeaderboardPage() {
         const load = async () => {
             const context = await sdk.context;
             setUsername(context?.user.username || "");
+            setFid(context?.user.fid || 5650);
         };
         if (sdk && !isSDKLoaded) {
             setIsSDKLoaded(true);
@@ -173,7 +182,8 @@ export default function LeaderboardPage() {
                 category,
                 score,
                 comment: data.response,
-                wallet_address: "0x1234567890123456789012345678901234567890"
+                fid,
+                wallet_address: walletAddress
             });
 
             setUserScores((prev) => ({
@@ -248,7 +258,12 @@ export default function LeaderboardPage() {
                             <div className="flex items-center gap-4">
                                 <span className="text-xl font-bold text-purple-400">#{leader.rank}</span>
                                 <div>
-                                    <span className="text-white">{leader.name}</span>
+                                    <span
+                                        className="text-white cursor-pointer hover:text-purple-400 transition-colors underline"
+                                        onClick={() => leader.fid && sdk.actions.viewProfile({ fid: parseInt(leader.fid) })}
+                                    >
+                                        @{leader.name}
+                                    </span>
                                     <p className="text-sm text-gray-400 mt-1">
                                         {leader.comment}
                                     </p>

@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteNewsByUsername, upsertNewsItem } from "@/lib/supabaseClient";
+import { deleteNewsByUsername, upsertNewsItem, dumpDummyLeaderboardEntries } from "@/lib/supabaseClient";
 import { getFarcasterCasts, getPerplexity, getCoindeskArticles, filterFarcasterCasts, filterCoindeskArticles } from "@/lib/newsData";
 
 export default function Home() {
@@ -40,6 +40,16 @@ export default function Home() {
         }
     };
 
+    const dumpDummyData = async () => {
+        try {
+            console.log("DUMPING DUMMY LEADERBOARD DATA");
+            await dumpDummyLeaderboardEntries();
+            console.log("DUMPED DUMMY LEADERBOARD DATA");
+        } catch (error) {
+            console.error("Error dumping dummy data:", error);
+        }
+    };
+
     return (
         <div className="min-h-screen p-8">
             <main className="flex flex-col items-center gap-4">
@@ -54,6 +64,12 @@ export default function Home() {
                     className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
                 >
                     Delete Default Data
+                </button>
+                <button
+                    onClick={dumpDummyData}
+                    className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                >
+                    Load Dummy Leaderboard Data
                 </button>
             </main>
         </div>

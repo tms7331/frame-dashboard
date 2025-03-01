@@ -31,6 +31,7 @@ export interface LeaderboardEntry {
     id?: number;
     category: string;
     wallet_address: string;
+    fid: number;
     username: string;
     score: number;
     comment?: string;
@@ -126,24 +127,24 @@ export async function upsertUserPrompt(username: string, prompt: string): Promis
 export async function dumpDummyLeaderboardEntries() {
     const entries: LeaderboardEntry[] = [
         // Broke entries
-        { category: 'broke', wallet_address: '0xBroke1', username: 'user1', score: 100, comment: 'Broke - just starting out' },
-        { category: 'broke', wallet_address: '0xBroke2', username: 'user2', score: 150, comment: 'Broke but learning' },
-        { category: 'broke', wallet_address: '0xBroke3', username: 'user3', score: 200, comment: 'Broke and budgeting' },
+        { category: 'broke', fid: 5650, wallet_address: '0xBroke1', username: 'user1', score: 100, comment: 'Broke - just starting out' },
+        { category: 'broke', fid: 5650, wallet_address: '0xBroke2', username: 'user2', score: 150, comment: 'Broke but learning' },
+        { category: 'broke', fid: 5650, wallet_address: '0xBroke3', username: 'user3', score: 200, comment: 'Broke and budgeting' },
 
         // Degen entries
-        { category: 'degen', wallet_address: '0xDegen1', username: 'user4', score: 300, comment: 'Degen - high risk, high reward' },
-        { category: 'degen', wallet_address: '0xDegen2', username: 'user5', score: 350, comment: 'Degen, no regrets' },
-        { category: 'degen', wallet_address: '0xDegen3', username: 'user6', score: 400, comment: 'Degen, on a roll' },
+        { category: 'degen', fid: 5650, wallet_address: '0xDegen1', username: 'user4', score: 300, comment: 'Degen - high risk, high reward' },
+        { category: 'degen', fid: 5650, wallet_address: '0xDegen2', username: 'user5', score: 350, comment: 'Degen, no regrets' },
+        { category: 'degen', fid: 5650, wallet_address: '0xDegen3', username: 'user6', score: 400, comment: 'Degen, on a roll' },
 
         // Bluechip entries
-        { category: 'bluechip', wallet_address: '0xBluechip1', username: 'user7', score: 500, comment: 'Bluechip, steady growth' },
-        { category: 'bluechip', wallet_address: '0xBluechip2', username: 'user8', score: 550, comment: 'Bluechip, reliable' },
-        { category: 'bluechip', wallet_address: '0xBluechip3', username: 'user9', score: 600, comment: 'Bluechip, long-term vision' },
+        { category: 'bluechip', fid: 5650, wallet_address: '0xBluechip1', username: 'user7', score: 500, comment: 'Bluechip, steady growth' },
+        { category: 'bluechip', fid: 5650, wallet_address: '0xBluechip2', username: 'user8', score: 550, comment: 'Bluechip, reliable' },
+        { category: 'bluechip', fid: 5650, wallet_address: '0xBluechip3', username: 'user9', score: 600, comment: 'Bluechip, long-term vision' },
 
         // Additional entries to make a dozen
-        { category: 'broke', wallet_address: '0xBroke4', username: 'user10', score: 120, comment: 'Broke, but optimistic' },
-        { category: 'degen', wallet_address: '0xDegen4', username: 'user11', score: 420, comment: 'Degen, playing smart' },
-        { category: 'bluechip', wallet_address: '0xBluechip4', username: 'user12', score: 620, comment: 'Bluechip, consistent performer' },
+        { category: 'broke', fid: 5650, wallet_address: '0xBroke4', username: 'user10', score: 120, comment: 'Broke, but optimistic' },
+        { category: 'degen', fid: 5650, wallet_address: '0xDegen4', username: 'user11', score: 420, comment: 'Degen, playing smart' },
+        { category: 'bluechip', fid: 5650, wallet_address: '0xBluechip4', username: 'user12', score: 620, comment: 'Bluechip, consistent performer' },
     ];
 
     const { data, error } = await supabase
