@@ -13,6 +13,11 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const metadata: Metadata = {
+  title: "PulseBoardAI",
+  description: "Supercharge your crypto portfolio with PulseBoardAI",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
