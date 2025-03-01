@@ -25,6 +25,7 @@ import sdk, {
 import { useAccount } from "wagmi";
 import { useSetAtom } from 'jotai'
 import { walletAddressAtom, profileImageAtom, portfolioUrlAtom } from '@/lib/atoms'
+import { resolveENS } from "@/lib/ensResolve"
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
@@ -146,12 +147,17 @@ export default function FarcasterFrame() {
   }
 
   useEffect(() => {
-    if (address) {
-      // Truncate the address to the first 6 and last 4 characters
-      const truncatedAddress = address.slice(0, 6) + "..." + address.slice(-4)
-      setWalletAddress(truncatedAddress)
-      setPortfolioUrl(`/portfolio/${address}`)
+    const load = async () => {
+      if (address) {
+        const resolvedAddress = await resolveENS(address)
+        console.log("resolvedAddress", resolvedAddress)
+        // Truncate the address to the first 6 and last 4 characters
+        const truncatedAddress = resolvedAddress.slice(0, 6) + "..." + resolvedAddress.slice(-4)
+        setWalletAddress(truncatedAddress)
+        setPortfolioUrl(`/portfolio/${resolvedAddress}`)
+      }
     }
+    load()
   }, [address, setWalletAddress])
 
   useEffect(() => {

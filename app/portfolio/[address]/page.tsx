@@ -135,40 +135,6 @@ export default function PortfolioPage() {
         }
     }
 
-    const handleCastToFarcaster = async () => {
-        setLoading(true)
-        try {
-            await new Promise((resolve) => setTimeout(resolve, 1000))
-            alert("Cast to Farcaster successfully!")
-        } catch (error) {
-            console.error("Error casting to Farcaster:", error)
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const getSentimentColor = (sentiment: string) => {
-        switch (sentiment) {
-            case "positive":
-                return "bg-green-500"
-            case "negative":
-                return "bg-red-500"
-            default:
-                return "bg-yellow-500"
-        }
-    }
-
-    const getSentimentIcon = (sentiment: MarketReport["sentiment"]) => {
-        switch (sentiment) {
-            case "bullish":
-                return <ArrowUp className="w-6 h-6 text-green-500" />
-            case "bearish":
-                return <ArrowDown className="w-6 h-6 text-red-500" />
-            case "neutral":
-                return <Minus className="w-6 h-6 text-yellow-500" />
-        }
-    }
-
     if (!portfolio) return null
 
     // Calculate total value from the array
@@ -204,7 +170,7 @@ export default function PortfolioPage() {
                                 <tbody>
                                     {portfolio.map((token) => (
                                         <tr
-                                            key={token.id}
+                                            key={token.id + token.chain}
                                             className="border-t border-gray-700 hover:bg-gray-700/30 transition-colors"
                                         >
                                             <td className="p-3">
@@ -299,14 +265,6 @@ export default function PortfolioPage() {
                                 <div>
                                     <p className="mt-2 text-gray-300">{report}</p>
                                 </div>
-
-                                <Button
-                                    onClick={handleCastToFarcaster}
-                                    disabled={loading}
-                                    className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600"
-                                >
-                                    Cast to Farcaster
-                                </Button>
                             </div>
                         ) : (
                             <div className="text-center py-8 text-gray-400">Creating market report, please wait up to 1 minute...</div>
