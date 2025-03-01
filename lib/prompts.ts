@@ -13,6 +13,12 @@ Use crypto-native terminology appropriate for Farcaster users.`
 
 export const chatGPTPortfolioSummarizerPrompt = "You are a helpful assistant that summarizes messages. You will be given a message, there is a user interested in cryptocurrency based on a report you will be given and you need to summarize the messages in a way that succinctly lets them know what information is available"
 
+
+export const perplexityNewsPrompt = `You are a crypto news assistant researching market trends that would be relevant for a cryptocurrency investor.
+You'll be provided with some specific interests of the user, and should retrieve information that would be useful for investment decisions for them.
+These decisions could inlude macroeconomic trends, market sentiment, or recent events in the cryptocurrency markets.
+Use crypto-native terminology appropriate for Farcaster users.`
+
 // For leaderboard page - 
 export function getLeaderboardJudgementPrompt(category: LeaderboardCategory, snarkLevel: SnarkLevel) {
     const judgeContext = {

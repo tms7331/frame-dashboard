@@ -11,6 +11,7 @@ export default function PersonalizePage() {
     const [inputText, setInputText] = useState("")
     const [loading, setLoading] = useState(false)
     const [username, setUsername] = useState("-")
+    const [saveSuccess, setSaveSuccess] = useState(false)
 
     useEffect(() => {
         const loadData = async () => {
@@ -28,20 +29,19 @@ export default function PersonalizePage() {
     }, [])
 
     const handleSave = async () => {
-        if (!username) return; // Prevent saving if username is empty
+        if (!username) return;
         setLoading(true)
+        setSaveSuccess(false)
         try {
-            // Want to delete any elements they have in the news table so we'll update again on home screen
             await deleteNewsByUsername(username);
-
             await upsertUserPrompt(
                 username,
                 inputText
             )
-            alert("Areas of interest updated successfully!")
+            setSaveSuccess(true)
+            setTimeout(() => setSaveSuccess(false), 3000)
         } catch (error) {
             console.error("Error saving data:", error)
-            alert("Failed to save changes")
         } finally {
             setLoading(false)
         }
@@ -52,7 +52,7 @@ export default function PersonalizePage() {
             <MobileNav />
 
             <div className="container px-4 py-8 space-y-8">
-                <h1 className="text-3xl md:text-4xl font-bold text-white text-center">Personalize</h1>
+                <h1 className="text-3xl md:text-4xl font-bold text-white text-center">Personalize Newsfeed</h1>
 
                 {/* Areas of Interest Section */}
                 <Card className="p-6 bg-gray-800/50 border-gray-700">
@@ -77,8 +77,11 @@ export default function PersonalizePage() {
                                 Save
                             </Button>
                         </div>
+                        {saveSuccess && (
+                            <p className="text-sm text-green-400">✓ Successfully saved!</p>
+                        )}
                         {!username && (
-                            <p className="text-sm text-yellow-400">Use in Warpcast to personalize prompt</p>
+                            <p className="text-sm text-yellow-400">Use in Warpcast to personalize dashboard</p>
                         )}
                     </div>
                 </Card>

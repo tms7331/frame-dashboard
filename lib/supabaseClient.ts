@@ -5,6 +5,15 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 
+export interface NewsItem {
+    id?: number;              // Auto-generated primary key
+    tag: string;              // Tag for the news item
+    content: string;          // Content of the news item
+    username: string;         // Username of the author
+    write_timestamp?: string; // Timestamp when the item was written (automatically set)
+}
+
+
 export interface Report {
     id?: number;      // Auto-generated ID
     address: string;
@@ -42,29 +51,6 @@ export async function getAllLeaderboardEntries() {
 export async function getTopEntryForEachCategory() {
     const { data, error } = await supabase
         .rpc('get_top_entries');
-
-    if (error) {
-        throw error;
-    }
-    return data;
-}
-
-
-export async function getAllNews() {
-    const { data, error } = await supabase
-        .from('news')
-        .select('*');
-
-    if (error) {
-        throw error;
-    }
-    return data;
-}
-
-export async function writeNewsEntry(tag: string, content: string) {
-    const { data, error } = await supabase
-        .from('news')
-        .insert([{ tag, content }]);
 
     if (error) {
         throw error;
@@ -197,4 +183,40 @@ export async function upsertReport(address: string, summary: string, reportText:
         throw error;
     }
     return data;
+}
+
+
+export async function getNewsByUsername(username: string): Promise<NewsItem[]> {
+    const { data, error } = await supabase
+        .from('news')
+        .select('*')
+        .eq('username', username);
+
+    if (error) {
+        throw error;
+    }
+    return data;
+}
+
+export async function upsertNewsItem(tag: string, content: string, username: string): Promise<NewsItem> {
+    const { data, error } = await supabase
+        .from('news')
+        .upsert({ tag, content, username }, { onConflict: 'tag,username' })
+        .single();
+
+    if (error) {
+        throw error;
+    }
+    return data;
+}
+
+export async function deleteNewsByUsername(username: string): Promise<void> {
+    const { data, error } = await supabase
+        .from('news')
+        .delete()
+        .eq('username', username);
+
+    if (error) {
+        throw error;
+    }
 }

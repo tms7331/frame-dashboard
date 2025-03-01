@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteNewsByUsername, insertNewsItem } from "@/lib/supabaseClient";
+import { deleteNewsByUsername, upsertNewsItem } from "@/lib/supabaseClient";
 import { getFarcasterCasts, getPerplexity, getCoindeskArticles, filterFarcasterCasts, filterCoindeskArticles } from "@/lib/newsData";
 
 export default function Home() {
@@ -12,17 +12,17 @@ export default function Home() {
             const vitalikFid = 5650;
             const farcasterPosts = await getFarcasterCasts(vitalikFid);
             const filteredFarcasterPosts = await filterFarcasterCasts(farcasterPosts.casts, interests);
-            await insertNewsItem("farcaster", filteredFarcasterPosts, "-");
+            await upsertNewsItem("farcaster", filteredFarcasterPosts, "-");
 
             const coindeskArticles = await getCoindeskArticles();
             console.log("COINDESK ARTICLES", coindeskArticles);
             const filteredCoindeskArticles = await filterCoindeskArticles(coindeskArticles, interests);
             console.log("FILTERED COINDESK ARTICLES", filteredCoindeskArticles);
-            await insertNewsItem("coindesk", filteredCoindeskArticles, "-");
+            await upsertNewsItem("coindesk", filteredCoindeskArticles, "-");
 
             const perplexityString = await getPerplexity(interests);
             console.log("PERPLEXITY STRING", perplexityString);
-            await insertNewsItem("perplexity", perplexityString, "-");
+            await upsertNewsItem("perplexity", perplexityString, "-");
 
 
         } catch (error) {

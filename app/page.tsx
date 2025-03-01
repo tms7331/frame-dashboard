@@ -12,7 +12,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js"
-import { getTopEntryForEachCategory, getAllNews, getUserPrompt } from "@/lib/supabaseClient"
+import { getTopEntryForEachCategory, getUserPrompt, upsertNewsItem, getNewsByUsername } from "@/lib/supabaseClient"
 import type { ChartData, LeaderboardEntry, NewsItem } from "@/lib/types"
 import { MobileNav } from "@/components/mobile-nav"
 import sdk, {
@@ -26,6 +26,11 @@ import { useAccount } from "wagmi";
 import { useSetAtom } from 'jotai'
 import { walletAddressAtom, profileImageAtom, portfolioUrlAtom } from '@/lib/atoms'
 import { resolveENS } from "@/lib/ensResolve"
+import { getPerplexity } from "@/lib/newsData"
+import { filterCoindeskArticles } from "@/lib/newsData"
+import { getCoindeskArticles } from "@/lib/newsData"
+import { filterFarcasterCasts } from "@/lib/newsData"
+import { getFarcasterCasts } from "@/lib/newsData"
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
@@ -34,6 +39,27 @@ type HistoricalPriceData = {
   market_caps: [number, number][];
   total_volumes: [number, number][];
 };
+
+async function getNewsForUser(fid: number, username: string, prompt: string): Promise<NewsItem[]> {
+
+  const interests = prompt;
+  // const fid = 5650;
+  const farcasterPosts = await getFarcasterCasts(fid);
+  const filteredFarcasterPosts = await filterFarcasterCasts(farcasterPosts.casts, interests);
+  await upsertNewsItem("farcaster", filteredFarcasterPosts, username);
+
+  const coindeskArticles = await getCoindeskArticles();
+  console.log("COINDESK ARTICLES", coindeskArticles);
+  const filteredCoindeskArticles = await filterCoindeskArticles(coindeskArticles, interests);
+  console.log("FILTERED COINDESK ARTICLES", filteredCoindeskArticles);
+  await upsertNewsItem("coindesk", filteredCoindeskArticles, username);
+
+  const perplexityString = await getPerplexity(interests);
+  console.log("PERPLEXITY STRING", perplexityString);
+  await upsertNewsItem("perplexity", perplexityString, username);
+
+  return [{ "tag": "farcaster", "content": filteredFarcasterPosts }, { "tag": "coindesk", "content": filteredCoindeskArticles }, { "tag": "perplexity", "content": perplexityString }]
+}
 
 async function getHistoricalPrices(
   coinId: string,
@@ -56,6 +82,13 @@ async function getHistoricalPrices(
     return [];
   }
 }
+
+// Add this helper function to check if data is stale (older than 1 hour)
+const isDataStale = (timestamp: string) => {
+  const writeTime = new Date(timestamp).getTime();
+  const oneHourAgo = Date.now() - 60 * 60 * 1000;
+  return writeTime < oneHourAgo;
+};
 
 export default function FarcasterFrame() {
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
@@ -89,19 +122,13 @@ export default function FarcasterFrame() {
         prices: priceValues
       });
 
-      const [leadersData, newsData] = await Promise.all([
-        getTopEntryForEachCategory(),
-        getAllNews()
-      ]);
-
-      // Set the leadersData so they are always in the order of bluechip, degen, broke
+      // Get leaders data separately since it's not dependent on the prompt
+      const leadersData = await getTopEntryForEachCategory();
       const sortedLeaders = leadersData.sort((a, b) => {
         const order = ['bluechip', 'degen', 'broke'];
         return order.indexOf(a.category) - order.indexOf(b.category);
       });
-
-      setLeaders(sortedLeaders)
-      setNews(newsData)
+      setLeaders(sortedLeaders);
     }
 
     loadData()
@@ -148,24 +175,38 @@ export default function FarcasterFrame() {
 
   useEffect(() => {
     const load = async () => {
-      if (address) {
-        const resolvedAddress = await resolveENS(address)
-        console.log("resolvedAddress", resolvedAddress)
-        // Truncate the address to the first 6 and last 4 characters
-        const truncatedAddress = resolvedAddress.slice(0, 6) + "..." + resolvedAddress.slice(-4)
-        setWalletAddress(truncatedAddress)
-        setPortfolioUrl(`/portfolio/${resolvedAddress}`)
-      }
-    }
-    load()
-  }, [address, setWalletAddress])
-
-  useEffect(() => {
-    const load = async () => {
       const userContext_ = await sdk.context;
       setUserContext(userContext_);
-      const username = userContext_?.user.username || ""
-      const userPrompt = await getUserPrompt(username)
+      const username = userContext_?.user.username || "";
+      const userPrompt = await getUserPrompt(username);
+
+      let newsData: NewsItem[];
+      if (!userPrompt) {
+        // If no user prompt, use "-" as username
+        newsData = await getNewsByUsername("-");
+      } else {
+        // Get existing news data from table
+        const existingNews = await getNewsByUsername(username);
+        console.log("existingNews!", existingNews)
+        if (!existingNews.length || isDataStale(existingNews[0].write_timestamp!)) {
+          console.log("getting fresh news")
+          // If data is stale or doesn't exist, get fresh news
+          const fid = userContext_?.user.fid;
+          newsData = await getNewsForUser(fid, username, userPrompt.prompt);
+          console.log("newsData!", newsData)
+          // The getNewsForUser function should handle writing to the table
+        } else {
+          console.log("using existing news")
+          // Use existing news data if it's fresh
+          newsData = existingNews;
+        }
+      }
+      //Set it so they are always sorted in this order: farcaster, coindesk, perplexity
+      const sortedNewsData = newsData.sort((a, b) => {
+        const order = ['farcaster', 'coindesk', 'perplexity'];
+        return order.indexOf(a.tag) - order.indexOf(b.tag);
+      });
+      setNews(sortedNewsData);
 
       // Set profile image if available in userContext
       if (userContext_?.user.pfpUrl) {
@@ -180,6 +221,20 @@ export default function FarcasterFrame() {
       load();
     }
   }, [isSDKLoaded, setProfileImage]);
+
+  useEffect(() => {
+    const load = async () => {
+      if (address) {
+        const resolvedAddress = await resolveENS(address)
+        console.log("resolvedAddress", resolvedAddress)
+        // Truncate the address to the first 6 and last 4 characters
+        const truncatedAddress = resolvedAddress.slice(0, 6) + "..." + resolvedAddress.slice(-4)
+        setWalletAddress(truncatedAddress)
+        setPortfolioUrl(`/portfolio/${resolvedAddress}`)
+      }
+    }
+    load()
+  }, [address, setWalletAddress])
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900">
