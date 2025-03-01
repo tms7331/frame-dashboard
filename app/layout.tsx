@@ -13,9 +13,31 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const appUrl = "https://pulseboardai.framestop.xyz"
+
 export const metadata: Metadata = {
   title: "PulseBoardAI",
   description: "Supercharge your crypto portfolio with PulseBoardAI",
+  openGraph: {
+    title: "PulseBoardAI",
+    description: "Supercharge your crypto portfolio with PulseBoardAI",
+  },
+  other: {
+    "fc:frame": JSON.stringify({
+      version: "next",
+      imageUrl: `${appUrl}/placeholder.png`,
+      button: {
+        title: "Launch PulseBoardAI",
+        action: {
+          type: "launch_frame",
+          name: "PulseBoardAI Frame",
+          url: appUrl,
+          splashImageUrl: `${appUrl}/placeholder.png`,
+          splashBackgroundColor: "#f7f7f7",
+        },
+      },
+    }),
+  },
 };
 
 export default function RootLayout({
