@@ -13,7 +13,7 @@ import {
   Legend,
 } from "chart.js"
 import { getTopEntryForEachCategory, getUserPrompt, upsertNewsItem, getNewsByUsername } from "@/lib/supabaseClient"
-import type { ChartData, LeaderboardEntry, NewsItem } from "@/lib/types"
+import type { LeaderboardEntry, NewsItem } from "@/lib/types"
 import { MobileNav } from "@/components/mobile-nav"
 import sdk, {
   AddFrame,
@@ -31,6 +31,11 @@ import { filterCoindeskArticles } from "@/lib/newsData"
 import { getCoindeskArticles } from "@/lib/newsData"
 import { filterFarcasterCasts } from "@/lib/newsData"
 import { getFarcasterCasts } from "@/lib/newsData"
+
+type ChartData = {
+  labels: string[];
+  prices: number[];
+}
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
@@ -95,7 +100,6 @@ const isDataStale = (timestamp: string) => {
 export default function FarcasterFrame() {
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
   const [userContext, setUserContext] = useState<Context.FrameContext>();
-  const [prices, setPrices] = useState<number[]>([]);
   const [chartData, setChartData] = useState<ChartData | null>(null)
   const [leaders, setLeaders] = useState<LeaderboardEntry[]>([])
   const [news, setNews] = useState<NewsItem[]>([])
@@ -118,7 +122,6 @@ export default function FarcasterFrame() {
         })
       );
 
-      setPrices(priceValues);
       setChartData({
         labels,
         prices: priceValues
@@ -126,7 +129,7 @@ export default function FarcasterFrame() {
 
       // Get leaders data separately since it's not dependent on the prompt
       const leadersData = await getTopEntryForEachCategory();
-      const sortedLeaders = leadersData.sort((a, b) => {
+      const sortedLeaders = leadersData.sort((a: LeaderboardEntry, b: LeaderboardEntry) => {
         const order = ['bluechip', 'degen', 'broke'];
         return order.indexOf(a.category) - order.indexOf(b.category);
       });
@@ -260,7 +263,7 @@ export default function FarcasterFrame() {
                   },
                 ],
               }}
-              options={chartOptions}
+              options={chartOptions as any}
             />
           )}
         </div>
@@ -286,7 +289,7 @@ export default function FarcasterFrame() {
                         <span> champion</span>
                       </>
                     ) : (
-                      <span>{leader.name}</span>
+                      <span>{leader.username}</span>
                     )}
                   </div>
                   <span className="text-white font-bold">Score: {leader.score}</span>

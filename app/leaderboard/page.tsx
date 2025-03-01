@@ -107,11 +107,13 @@ export default function LeaderboardPage() {
                         .sort((a, b) => b.score - a.score)
                         .slice(0, 3)
                         .map((entry, index) => ({
-                            name: entry.username,
+                            username: entry.username,
                             score: entry.score,
                             rank: index + 1,
                             comment: entry.comment,
-                            fid: entry.fid
+                            fid: entry.fid,
+                            category: entry.category,
+                            wallet_address: entry.wallet_address
                         })),
                     yourScore: userEntries.bluechip?.score || 0,
                     yourRank: userEntries.bluechip ? entries.filter(e => e.category === 'bluechip' && e.score > userEntries.bluechip.score).length + 1 : 0,
@@ -122,11 +124,13 @@ export default function LeaderboardPage() {
                         .sort((a, b) => b.score - a.score)
                         .slice(0, 3)
                         .map((entry, index) => ({
-                            name: entry.username,
+                            username: entry.username,
                             score: entry.score,
                             rank: index + 1,
                             comment: entry.comment,
-                            fid: entry.fid
+                            fid: entry.fid,
+                            category: entry.category,
+                            wallet_address: entry.wallet_address
                         })),
                     yourScore: userEntries.degen?.score || 0,
                     yourRank: userEntries.degen ? entries.filter(e => e.category === 'degen' && e.score > userEntries.degen.score).length + 1 : 0,
@@ -137,11 +141,13 @@ export default function LeaderboardPage() {
                         .sort((a, b) => b.score - a.score)
                         .slice(0, 3)
                         .map((entry, index) => ({
-                            name: entry.username,
+                            username: entry.username,
                             score: entry.score,
                             rank: index + 1,
                             comment: entry.comment,
-                            fid: entry.fid
+                            fid: entry.fid,
+                            category: entry.category,
+                            wallet_address: entry.wallet_address
                         })),
                     yourScore: userEntries.broke?.score || 0,
                     yourRank: userEntries.broke ? entries.filter(e => e.category === 'broke' && e.score > userEntries.broke.score).length + 1 : 0,
@@ -210,11 +216,13 @@ export default function LeaderboardPage() {
 
                 // Create new entry
                 const newEntry = {
-                    name: username,
+                    username,
                     score,
                     comment,
                     fid: fid.toString(),
-                    rank: 0 // Will be updated below
+                    rank: 0, // Will be updated below
+                    category, // Add the category field
+                    wallet_address: walletAddress
                 };
 
                 // Insert new entry and sort
@@ -226,7 +234,7 @@ export default function LeaderboardPage() {
                 const updatedLeaders = newLeaders.slice(0, 3);
 
                 // Calculate your rank
-                const yourRank = newLeaders.findIndex(entry => entry.name === username) + 1;
+                const yourRank = newLeaders.findIndex(entry => entry.username === username) + 1;
 
                 // Update userScores
                 setUserScores(prev => ({
@@ -311,7 +319,7 @@ export default function LeaderboardPage() {
                                         className="text-white cursor-pointer hover:text-purple-400 transition-colors underline"
                                         onClick={() => leader.fid && sdk.actions.viewProfile({ fid: parseInt(leader.fid) })}
                                     >
-                                        @{leader.name}
+                                        @{leader.username}
                                     </span>
                                     <p className="text-sm text-gray-400 mt-1">
                                         {leader.comment}

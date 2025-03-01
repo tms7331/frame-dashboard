@@ -22,13 +22,15 @@ export type DebankToken = {
     raw_amount_hex_str: string
 }
 
+
 export type LeaderboardEntry = {
     category: string
-    name: string
+    username: string
     score: number
     rank: number
     comment: string
     fid: string
+    wallet_address: string
 }
 
 export type CategoryData = {
