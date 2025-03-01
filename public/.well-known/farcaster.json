@@ -1,0 +1,18 @@
+{
+    "accountAssociation": {
+        "header": "eyJmaWQiOjg3MTI4OCwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweGRDMjNBNDQ0RTM3QzU1RThmREQxRDcxNjYzNEJCN0QxZkIwNDY5YWIifQ",
+        "payload": "eyJkb21haW4iOiJwdWxzZWJvYXJkYWkuZnJhbWVzdG9wLnh5eiJ9",
+        "signature": "MHgzNjVhNGNhMmU1ZTU1Y2ViMDU4NTAwOWMwOTU3NWNmNmMyMzUzOGNkNWRhMmRiODRlMjEzY2RhNzMwODhmOTkzNzFjM2ZmNTE3NmM2ODYyYmFmYzExMjAzMjM0ZDBjMTZlNjY2NWZlMzNhZDE0Y2E4YWE3YmNhOTJkYWJiMWNmOTFi"
+    },
+    "frame": {
+        "version": "1",
+        "name": "PulseBoardAI",
+        "iconUrl": "https://pulseboardai.framestop.xyz/icon.png",
+        "homeUrl": "https://pulseboardai.framestop.xyz",
+        "imageUrl": "https://pulseboardai.framestop.xyz/image.png",
+        "buttonTitle": "PulseBoardAI",
+        "splashImageUrl": "https://pulseboardai.framestop.xyz/splash.png",
+        "splashBackgroundColor": "#eeccff",
+        "webhookUrl": "https://pulseboardai.framestop.xyz/api/webhook"
+    }
+}
