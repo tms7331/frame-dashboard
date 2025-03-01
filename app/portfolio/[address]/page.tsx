@@ -164,9 +164,7 @@ export default function PortfolioPage() {
                                     className="p-4 rounded-lg bg-gray-700/30 border border-gray-700"
                                 >
                                     <div className="flex justify-between items-center mb-2">
-                                        <Link href={`/research/coins/${token.id}`} className="text-lg font-medium text-white">
-                                            {token.symbol}
-                                        </Link>
+                                        <span className="text-white font-medium">{token.symbol}</span>
                                         <span className="text-white font-bold">
                                             ${(token.price * token.amount).toLocaleString()}
                                         </span>
