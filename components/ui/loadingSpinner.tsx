@@ -23,7 +23,7 @@ const LoadingSpinner = ({ size = 'medium', color = '#3b82f6', text = 'Loading...
 // Page wrapper that shows spinner during page transitions
 const LoadingWrapper = ({ isLoading, children }) => {
   return isLoading ? (
-    <div className="fixed inset-0 bg-white bg-opacity-80 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 bg-gray bg-opacity-80 z-50 flex items-center justify-center">
       <LoadingSpinner />
     </div>
   ) : children;
