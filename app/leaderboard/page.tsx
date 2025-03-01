@@ -219,9 +219,9 @@ export default function LeaderboardPage() {
         }
     }
 
-    const handleCastToFarcaster = useCallback((score: number, category: string) => {
-        const text = `My ${category} trading score: ${score}! Judge my trades on Farcaster Trader`;
-        sdk.actions.openUrl(`https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`);
+    const handleCastToFarcaster = useCallback((score: number, comment: string, category: string) => {
+        const text = `My ${category} trading is ${comment} and my score is ${score}!`;
+        sdk.actions.openUrl(`https://warpcast.com/~/compose?text=${encodeURIComponent(text)}&embeds[]=https://pulseboardai.framestop.xyz`);
     }, []);
 
     const renderSnarkLevelSelector = (category: string) => (
@@ -298,9 +298,9 @@ export default function LeaderboardPage() {
                             </div>
                             <Button
                                 className="bg-purple-500 hover:bg-purple-600"
-                                onClick={() => handleCastToFarcaster(userScore.score, category)}
+                                onClick={() => handleCastToFarcaster(userScore.score, userScore.comment, category)}
                             >
-                                Cast to Farcaster
+                                Cast
                             </Button>
                         </div>
                     )}
