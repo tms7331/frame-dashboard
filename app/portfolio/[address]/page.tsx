@@ -126,9 +126,9 @@ export default function PortfolioPage() {
 
         setCasting(true)
         try {
-
             const encodedText = encodeURIComponent(analysis);
-            const castLink = `https://warpcast.com/~/compose?text=${encodedText}`;
+            // const castLink = `https://warpcast.com/~/compose?text=${encodedText}`;
+            const castLink = `https://warpcast.com/~/compose?text=${encodedText}&embeds[]=https://pulseboardai.framestop.xyz/dailymeme/hello`;
             openUrl(castLink)
         } catch (error) {
             console.error("Error casting haiku:", error)
