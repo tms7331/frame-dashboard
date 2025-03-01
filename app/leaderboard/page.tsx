@@ -15,9 +15,9 @@ import { useAtomValue } from 'jotai'
 import { walletAddressAtom } from "@/lib/atoms"
 
 const SNARK_LEVELS = [
-    { value: "belligerent", label: "Belligerent" },
+    { value: "belligerent", label: "Rude" },
     { value: "passive_aggressive", label: "Passive Aggressive" },
-    { value: "euphoric", label: "Euphoric" },
+    { value: "euphoric", label: "Bubbly" },
 ] as const
 
 type UserScore = {
@@ -26,6 +26,21 @@ type UserScore = {
     comment: string
 } | null
 
+
+function parseScore(score: string) {
+    // Split by $$$ and take first two elements regardless of how many splits exist
+    const [first, second] = score.split("$$$").slice(0, 2)
+
+    // Try to parse first as number, fallback to random if it fails
+    const firstValue = Number.isNaN(parseInt(first))
+        ? Math.floor(Math.random() * 1000) + 1
+        : parseInt(first)
+
+    return {
+        first: firstValue,
+        second: second || "" // Return empty string if second is undefined
+    }
+}
 
 export default function LeaderboardPage() {
     const [username, setUsername] = useState("")
@@ -174,26 +189,66 @@ export default function LeaderboardPage() {
             });
 
             const data = await response.json();
-            const score = Math.floor(Math.random() * 1000);
+            const { first: score, second: comment } = parseScore(data.response);
 
             // Update Supabase with the new score and comment
             await upsertLeaderboardEntry({
                 username,
                 category,
                 score,
-                comment: data.response,
+                comment,
                 fid,
                 wallet_address: walletAddress
             });
 
-            setUserScores((prev) => ({
-                ...prev,
-                [category]: {
-                    score: score,
-                    rank: Math.floor(Math.random() * 20) + 1,
-                    comment: data.response,
-                },
-            }))
+            // Update leaderboardData with the new score
+            setLeaderboardData(prevData => {
+                if (!prevData) return prevData;
+
+                const categoryData = prevData[category];
+                const newLeaders = [...categoryData.leaders];
+
+                // Create new entry
+                const newEntry = {
+                    name: username,
+                    score,
+                    comment,
+                    fid: fid.toString(),
+                    rank: 0 // Will be updated below
+                };
+
+                // Insert new entry and sort
+                newLeaders.push(newEntry);
+                newLeaders.sort((a, b) => b.score - a.score);
+
+                // Update ranks and keep top 3
+                newLeaders.forEach((entry, index) => entry.rank = index + 1);
+                const updatedLeaders = newLeaders.slice(0, 3);
+
+                // Calculate your rank
+                const yourRank = newLeaders.findIndex(entry => entry.name === username) + 1;
+
+                // Update userScores
+                setUserScores(prev => ({
+                    ...prev,
+                    [category]: {
+                        score,
+                        rank: yourRank,
+                        comment
+                    }
+                }));
+
+                return {
+                    ...prevData,
+                    [category]: {
+                        ...categoryData,
+                        leaders: updatedLeaders,
+                        yourScore: score,
+                        yourRank: yourRank
+                    }
+                };
+            });
+
         } catch (error) {
             console.error("Failed to get AI response:", error);
         } finally {
@@ -205,12 +260,6 @@ export default function LeaderboardPage() {
         const text = `My ${category} trading score: ${score}! Judge my trades on Farcaster Trader`;
         sdk.actions.openUrl(`https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`);
     }, []);
-
-    // const handleCastToFarcaster = (score: number, category: string) => {
-    //     const text = `My ${category} trading score: ${score}! Judge my trades on Farcaster Trader`;
-    //     const url = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`;
-    //     window.open(url, '_blank');
-    // }
 
     const renderSnarkLevelSelector = (category: string) => (
         <div className="space-y-2">
@@ -323,9 +372,9 @@ export default function LeaderboardPage() {
         <div className="min-h-screen w-full bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900">
             <MobileNav />
 
-            <div className="container px-4 py-8 space-y-8">
-                <h1 className="text-3xl md:text-4xl font-bold text-white text-center">Leaderboard</h1>
-                <div className="grid gap-8">
+            <div className="container px-4 py-8">
+                <h1 className="text-3xl font-bold text-white text-center mb-8">Leaderboard</h1>
+                <div className="space-y-8">
                     {renderCategory("Bluechip", "bluechip")}
                     {renderCategory("Degen", "degen")}
                     {renderCategory("Broke", "broke")}

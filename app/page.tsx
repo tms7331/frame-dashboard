@@ -229,9 +229,7 @@ export default function FarcasterFrame() {
       if (address) {
         const resolvedAddress = await resolveENS(address)
         console.log("resolvedAddress", resolvedAddress)
-        // Truncate the address to the first 6 and last 4 characters
-        const truncatedAddress = resolvedAddress.slice(0, 6) + "..." + resolvedAddress.slice(-4)
-        setWalletAddress(truncatedAddress)
+        setWalletAddress(resolvedAddress)
         setPortfolioUrl(`/portfolio/${resolvedAddress}`)
       }
     }

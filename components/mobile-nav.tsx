@@ -27,7 +27,7 @@ export function MobileNav() {
                 </Link>
 
                 <div className="flex items-center gap-3">
-                    <span className="text-gray-300 font-mono text-xs">{walletAddress}</span>
+                    <span className="text-gray-300 font-mono text-xs">{walletAddress.slice(0, 6) + "..." + walletAddress.slice(-4)}</span>
                     <button className="w-6 h-6 rounded-full overflow-hidden border border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-1 focus:ring-offset-gray-900">
                         <Image
                             src={profileImage}
