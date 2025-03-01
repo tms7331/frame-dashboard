@@ -43,28 +43,43 @@ type HistoricalPriceData = {
 
 async function getNewsForUser(fid: number, username: string, prompt: string): Promise<NewsItem[]> {
   const interests = prompt;
+  const results: NewsItem[] = [];
 
   // Get and process Farcaster posts
-  const farcasterPosts = await getFarcasterCasts(fid);
-  const formattedFarcasterPosts = await formatFarcasterCasts(farcasterPosts.casts);
-  const filteredFarcasterPosts = await filterFarcasterCasts(formattedFarcasterPosts, interests);
-  await upsertNewsItem("farcaster", filteredFarcasterPosts, username);
+  try {
+    const farcasterPosts = await getFarcasterCasts(fid);
+    const formattedFarcasterPosts = await formatFarcasterCasts(farcasterPosts.casts);
+    const filteredFarcasterPosts = await filterFarcasterCasts(formattedFarcasterPosts, interests);
+    await upsertNewsItem("farcaster", filteredFarcasterPosts, username);
+    results.push({ "tag": "farcaster", "content": filteredFarcasterPosts });
+  } catch (error) {
+    console.error("Failed to fetch Farcaster posts:", error);
+    results.push({ "tag": "farcaster", "content": "Unable to fetch Farcaster posts at this time." });
+  }
 
   // Get and process Coindesk articles
-  const coindeskArticles = await getCoindeskArticles();
-  const formattedCoindeskArticles = await formatCoindeskArticles(coindeskArticles);
-  const filteredCoindeskArticles = await filterCoindeskArticles(formattedCoindeskArticles, interests);
-  await upsertNewsItem("coindesk", filteredCoindeskArticles, username);
+  try {
+    const coindeskArticles = await getCoindeskArticles();
+    const formattedCoindeskArticles = await formatCoindeskArticles(coindeskArticles);
+    const filteredCoindeskArticles = await filterCoindeskArticles(formattedCoindeskArticles, interests);
+    await upsertNewsItem("coindesk", filteredCoindeskArticles, username);
+    results.push({ "tag": "coindesk", "content": filteredCoindeskArticles });
+  } catch (error) {
+    console.error("Failed to fetch Coindesk articles:", error);
+    results.push({ "tag": "coindesk", "content": "Unable to fetch Coindesk articles at this time." });
+  }
 
   // Get Perplexity data
-  const perplexityString = await getPerplexity(interests);
-  await upsertNewsItem("perplexity", perplexityString, username);
+  try {
+    const perplexityString = await getPerplexity(interests);
+    await upsertNewsItem("perplexity", perplexityString, username);
+    results.push({ "tag": "perplexity", "content": perplexityString });
+  } catch (error) {
+    console.error("Failed to fetch Perplexity data:", error);
+    results.push({ "tag": "perplexity", "content": "Unable to fetch Perplexity insights at this time." });
+  }
 
-  return [
-    { "tag": "farcaster", "content": filteredFarcasterPosts },
-    { "tag": "coindesk", "content": filteredCoindeskArticles },
-    { "tag": "perplexity", "content": perplexityString }
-  ]
+  return results;
 }
 
 async function getHistoricalPrices(
