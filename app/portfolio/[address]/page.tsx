@@ -66,17 +66,16 @@ export default function PortfolioPage() {
         const loadData = async () => {
             try {
                 // Get portfolio data
-                console.log("Getting portfolio data for", address)
                 const portfolioData = await getPortfolio(address)
-                console.log("portfolioData", portfolioData)
                 setPortfolio(portfolioData)
 
                 if (portfolioData.length === 0) {
                     setReport("No portfolio data found!")
                     setSummary("No portfolio data found!")
                 } else {
-                    const existingReport = await getReport(address)
-                    console.log("existingReport", existingReport)
+                    // const existingReport = await getReport(address)
+                    // hardcoding '-' to get default report since it's so slow...
+                    const existingReport = await getReport('-')
 
                     if (existingReport) {
                         setReport(existingReport.report)
@@ -260,7 +259,7 @@ export default function PortfolioPage() {
                         {report ? (
                             <div className="space-y-4">
                                 <div>
-                                    <p className="mt-2 text-gray-300">{report}</p>
+                                    <p className="mt-2 text-gray-300 whitespace-pre-line">{report}</p>
                                 </div>
                             </div>
                         ) : (

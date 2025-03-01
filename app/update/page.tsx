@@ -1,7 +1,8 @@
 "use client";
 
-import { deleteNewsByUsername, upsertNewsItem, dumpDummyLeaderboardEntries } from "@/lib/supabaseClient";
+import { deleteNewsByUsername, upsertNewsItem, dumpDummyLeaderboardEntries, upsertReport } from "@/lib/supabaseClient";
 import { getFarcasterCasts, getPerplexity, getCoindeskArticles, filterFarcasterCasts, formatFarcasterCasts, filterCoindeskArticles, formatCoindeskArticles } from "@/lib/newsData";
+import { chatGPTPortfolioSummarizerPrompt, perplexityPortfolioReportPrompt } from '@/lib/prompts';
 
 export default function Home() {
     const updateAll = async () => {
@@ -53,6 +54,20 @@ export default function Home() {
         }
     };
 
+    const testReport = async () => {
+        console.log("TESTING REPORT");
+        try {
+            const portfolioString = "ETH: 10\nBTC: 1\nSOL: 100"; // Example portfolio
+            const newReport = await buildReport(portfolioString);
+            console.log("NEW REPORT", newReport);
+            const newSummary = await summarizeReport(newReport);
+            console.log("NEW SUMMARY", newSummary);
+            await upsertReport("-", newSummary, newReport)
+        } catch (error) {
+            console.error("Error generating report:", error);
+        }
+    };
+
     return (
         <div className="min-h-screen p-8">
             <main className="flex flex-col items-center gap-4">
@@ -74,7 +89,37 @@ export default function Home() {
                 >
                     Load Dummy Leaderboard Data
                 </button>
+                <button
+                    onClick={testReport}
+                    className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+                >
+                    Test Portfolio Report
+                </button>
             </main>
         </div>
     );
+}
+
+async function buildReport(portfolioString: string) {
+    const response = await fetch(`/api/perplexity`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message: portfolioString, context: perplexityPortfolioReportPrompt, model: "sonar-deep-research" }),
+    });
+    const data = await response.json();
+    return data.response;
+}
+
+async function summarizeReport(report: string) {
+    const response = await fetch(`/api/chatgpt`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message: report, context: chatGPTPortfolioSummarizerPrompt }),
+    });
+    const data = await response.json();
+    return data.response;
 }
