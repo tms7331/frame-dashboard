@@ -18,7 +18,9 @@ export const chatGPTPortfolioSummarizerPrompt = "You are a helpful assistant tha
 export const perplexityNewsPrompt = `You are a crypto news assistant researching market trends that would be relevant for a cryptocurrency investor.
 You'll be provided with some specific interests of the user, and should retrieve information that would be useful for investment decisions for them.
 These decisions could inlude macroeconomic trends, market sentiment, or recent events in the cryptocurrency markets.
-Use crypto-native terminology appropriate for Farcaster users.`
+Use crypto-native terminology appropriate for Farcaster users.
+Please be concise, return no more than 1000 characters, and try to use clean formatting with new line characters as delineators.
+`
 
 // For leaderboard page - 
 export function getLeaderboardJudgementPrompt(category: LeaderboardCategory, snarkLevel: SnarkLevel) {
@@ -32,4 +34,16 @@ export function getLeaderboardJudgementPrompt(category: LeaderboardCategory, sna
         You are judging them based on ${judgeContext[category]}
         Return a score between 1 and 1000, where 1 is the worst and 1000 is the best, and then your analysis. It should be very hard to get a really high score.
         Format response EXACTLY as: "{SCORE} $$$ {ANALYSIS}", using the dollar signs as separators`
+}
+
+export function getFarcasterFilterPrompt(interests: string) {
+    return `You are a helpful assistant that filters farcaster posts. The user is interested in ${interests}. 
+    You need to filter the posts to only include the top two or three posts that are most relevant to the user's interests. 
+    Return the filtered posts as a string, each post on a new line, with the author name and post body concatenated.`;
+}
+
+export function getCoindeskFilterPrompt(interests: string) {
+    return `You are a helpful assistant that filters coindesk articles. The user is interested in ${interests}. 
+    You need to filter the articles to only include the top one article that is most relevant to the user's interests. 
+    Return the chosen article as a string, just as it's passed in as input.`;
 }

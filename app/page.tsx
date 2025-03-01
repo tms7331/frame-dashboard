@@ -26,11 +26,7 @@ import { useAccount } from "wagmi";
 import { useSetAtom } from 'jotai'
 import { walletAddressAtom, profileImageAtom, portfolioUrlAtom } from '@/lib/atoms'
 import { resolveENS } from "@/lib/ensResolve"
-import { getPerplexity } from "@/lib/newsData"
-import { filterCoindeskArticles } from "@/lib/newsData"
-import { getCoindeskArticles } from "@/lib/newsData"
-import { filterFarcasterCasts } from "@/lib/newsData"
-import { getFarcasterCasts } from "@/lib/newsData"
+import { formatFarcasterCasts, getPerplexity, filterFarcasterCasts, getCoindeskArticles, filterCoindeskArticles, formatCoindeskArticles, getFarcasterCasts } from "@/lib/newsData"
 
 type ChartData = {
   labels: string[];
@@ -46,24 +42,29 @@ type HistoricalPriceData = {
 };
 
 async function getNewsForUser(fid: number, username: string, prompt: string): Promise<NewsItem[]> {
-
   const interests = prompt;
-  // const fid = 5650;
+
+  // Get and process Farcaster posts
   const farcasterPosts = await getFarcasterCasts(fid);
-  const filteredFarcasterPosts = await filterFarcasterCasts(farcasterPosts.casts, interests);
+  const formattedFarcasterPosts = await formatFarcasterCasts(farcasterPosts.casts);
+  const filteredFarcasterPosts = await filterFarcasterCasts(formattedFarcasterPosts, interests);
   await upsertNewsItem("farcaster", filteredFarcasterPosts, username);
 
+  // Get and process Coindesk articles
   const coindeskArticles = await getCoindeskArticles();
-  console.log("COINDESK ARTICLES", coindeskArticles);
-  const filteredCoindeskArticles = await filterCoindeskArticles(coindeskArticles, interests);
-  console.log("FILTERED COINDESK ARTICLES", filteredCoindeskArticles);
+  const formattedCoindeskArticles = await formatCoindeskArticles(coindeskArticles);
+  const filteredCoindeskArticles = await filterCoindeskArticles(formattedCoindeskArticles, interests);
   await upsertNewsItem("coindesk", filteredCoindeskArticles, username);
 
+  // Get Perplexity data
   const perplexityString = await getPerplexity(interests);
-  console.log("PERPLEXITY STRING", perplexityString);
   await upsertNewsItem("perplexity", perplexityString, username);
 
-  return [{ "tag": "farcaster", "content": filteredFarcasterPosts }, { "tag": "coindesk", "content": filteredCoindeskArticles }, { "tag": "perplexity", "content": perplexityString }]
+  return [
+    { "tag": "farcaster", "content": filteredFarcasterPosts },
+    { "tag": "coindesk", "content": filteredCoindeskArticles },
+    { "tag": "perplexity", "content": perplexityString }
+  ]
 }
 
 async function getHistoricalPrices(
@@ -91,7 +92,8 @@ async function getHistoricalPrices(
 // Add this helper function to check if data is stale (older than 1 hour)
 const isDataStale = (timestamp: string) => {
   const writeTime = new Date(timestamp).getTime();
-  const oneHourAgo = Date.now() - 60 * 60 * 1000;
+  // Changing to 6 hours
+  const oneHourAgo = Date.now() - 60 * 60 * 6 * 1000;
   console.log("STALE DATA CHECK", writeTime, oneHourAgo)
   console.log("IS STALE?", writeTime < oneHourAgo)
   return writeTime < oneHourAgo;
@@ -342,7 +344,13 @@ export default function FarcasterFrame() {
             {news.map((item, index) => (
               <div key={index} className="bg-gray-800/50 rounded-lg p-4">
                 <h3 className="text-white font-semibold">{item.tag.charAt(0).toUpperCase() + item.tag.slice(1)}</h3>
-                <p className="text-gray-400 text-sm mt-1">{item.content}</p>
+                <div className="text-gray-400 text-sm mt-1">
+                  {typeof item.content === 'string'
+                    ? item.content.split('\n').map((line, i) => (
+                      <p key={i} className="mb-2">{line}</p>
+                    ))
+                    : item.content}
+                </div>
               </div>
             ))}
           </div>

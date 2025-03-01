@@ -1,7 +1,7 @@
 "use client";
 
 import { deleteNewsByUsername, upsertNewsItem, dumpDummyLeaderboardEntries } from "@/lib/supabaseClient";
-import { getFarcasterCasts, getPerplexity, getCoindeskArticles, filterFarcasterCasts, filterCoindeskArticles } from "@/lib/newsData";
+import { getFarcasterCasts, getPerplexity, getCoindeskArticles, filterFarcasterCasts, formatFarcasterCasts, filterCoindeskArticles, formatCoindeskArticles } from "@/lib/newsData";
 
 export default function Home() {
     const updateAll = async () => {
@@ -11,12 +11,15 @@ export default function Home() {
 
             const vitalikFid = 5650;
             const farcasterPosts = await getFarcasterCasts(vitalikFid);
-            const filteredFarcasterPosts = await filterFarcasterCasts(farcasterPosts.casts, interests);
+            const formattedFarcasterPosts = await formatFarcasterCasts(farcasterPosts.casts);
+            const filteredFarcasterPosts = await filterFarcasterCasts(formattedFarcasterPosts, interests);
             await upsertNewsItem("farcaster", filteredFarcasterPosts, "-");
 
             const coindeskArticles = await getCoindeskArticles();
             console.log("COINDESK ARTICLES", coindeskArticles);
-            const filteredCoindeskArticles = await filterCoindeskArticles(coindeskArticles, interests);
+            const formattedCoindeskArticles = await formatCoindeskArticles(coindeskArticles);
+            console.log("FORMATTED COINDESK ARTICLES", formattedCoindeskArticles);
+            const filteredCoindeskArticles = await filterCoindeskArticles(formattedCoindeskArticles, interests);
             console.log("FILTERED COINDESK ARTICLES", filteredCoindeskArticles);
             await upsertNewsItem("coindesk", filteredCoindeskArticles, "-");
 
