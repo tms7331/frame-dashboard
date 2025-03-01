@@ -5,7 +5,7 @@ import { MobileNav } from "@/components/mobile-nav"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { getUserPrompt, upsertUserPrompt } from "@/lib/supabaseClient"
+import { deleteNewsByUsername, getUserPrompt, upsertUserPrompt } from "@/lib/supabaseClient"
 import sdk from "@farcaster/frame-sdk"
 export default function PersonalizePage() {
     const [inputText, setInputText] = useState("")
@@ -31,6 +31,9 @@ export default function PersonalizePage() {
         if (!username) return; // Prevent saving if username is empty
         setLoading(true)
         try {
+            // Want to delete any elements they have in the news table so we'll update again on home screen
+            await deleteNewsByUsername(username);
+
             await upsertUserPrompt(
                 username,
                 inputText
