@@ -15,7 +15,7 @@ const LoadingSpinner = ({ size = 'medium', color = '#3b82f6', text = 'Loading...
       <div className={`${spinnerSize} rounded-full border-t-transparent animate-spin`} 
         style={{ borderColor: `${color} transparent transparent transparent` }}>
       </div>
-      {text && <p className="mt-4 text-gray-600">{text}</p>}
+      {text && <p className="mt-4 text-purple-600">{text}</p>}
     </div>
   );
 };
