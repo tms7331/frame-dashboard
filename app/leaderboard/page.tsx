@@ -63,102 +63,96 @@ export default function LeaderboardPage() {
     const [portfolio, setPortfolio] = useState<DebankToken[]>([])
     const walletAddress = useAtomValue(walletAddressAtom)
 
-    useEffect(() => {
-        const fetchPortfolio = async () => {
-            const portfolio = await getPortfolio(walletAddress)
-            setPortfolio(portfolio)
-        }
-        fetchPortfolio()
+    const fetchAndProcessLeaderboardData = useCallback(async () => {
+        const entries = await getAllLeaderboardEntries();
 
-        const fetchLeaderboardData = async () => {
-            const entries = await getAllLeaderboardEntries();
-
-            // Find user's entries for each category
-            const userEntries = {
-                bluechip: entries.find(entry => entry.category === 'bluechip' && entry.username === username),
-                degen: entries.find(entry => entry.category === 'degen' && entry.username === username),
-                broke: entries.find(entry => entry.category === 'broke' && entry.username === username),
-            };
-
-            // Update user scores based on found entries
-            setUserScores({
-                bluechip: userEntries.bluechip ? {
-                    score: userEntries.bluechip.score,
-                    rank: entries.filter(e => e.category === 'bluechip' && e.score > userEntries.bluechip.score).length + 1,
-                    comment: userEntries.bluechip.comment
-                } : null,
-                degen: userEntries.degen ? {
-                    score: userEntries.degen.score,
-                    rank: entries.filter(e => e.category === 'degen' && e.score > userEntries.degen.score).length + 1,
-                    comment: userEntries.degen.comment
-                } : null,
-                broke: userEntries.broke ? {
-                    score: userEntries.broke.score,
-                    rank: entries.filter(e => e.category === 'broke' && e.score > userEntries.broke.score).length + 1,
-                    comment: userEntries.broke.comment
-                } : null,
-            });
-
-            // Process entries for each category
-            const processedData: LeaderboardData = {
-                bluechip: {
-                    leaders: entries
-                        .filter(entry => entry.category === 'bluechip')
-                        .sort((a, b) => b.score - a.score)
-                        .slice(0, 3)
-                        .map((entry, index) => ({
-                            username: entry.username,
-                            score: entry.score,
-                            rank: index + 1,
-                            comment: entry.comment,
-                            fid: entry.fid,
-                            category: entry.category,
-                            wallet_address: entry.wallet_address
-                        })),
-                    yourScore: userEntries.bluechip?.score || 0,
-                    yourRank: userEntries.bluechip ? entries.filter(e => e.category === 'bluechip' && e.score > userEntries.bluechip.score).length + 1 : 0,
-                },
-                degen: {
-                    leaders: entries
-                        .filter(entry => entry.category === 'degen')
-                        .sort((a, b) => b.score - a.score)
-                        .slice(0, 3)
-                        .map((entry, index) => ({
-                            username: entry.username,
-                            score: entry.score,
-                            rank: index + 1,
-                            comment: entry.comment,
-                            fid: entry.fid,
-                            category: entry.category,
-                            wallet_address: entry.wallet_address
-                        })),
-                    yourScore: userEntries.degen?.score || 0,
-                    yourRank: userEntries.degen ? entries.filter(e => e.category === 'degen' && e.score > userEntries.degen.score).length + 1 : 0,
-                },
-                broke: {
-                    leaders: entries
-                        .filter(entry => entry.category === 'broke')
-                        .sort((a, b) => b.score - a.score)
-                        .slice(0, 3)
-                        .map((entry, index) => ({
-                            username: entry.username,
-                            score: entry.score,
-                            rank: index + 1,
-                            comment: entry.comment,
-                            fid: entry.fid,
-                            category: entry.category,
-                            wallet_address: entry.wallet_address
-                        })),
-                    yourScore: userEntries.broke?.score || 0,
-                    yourRank: userEntries.broke ? entries.filter(e => e.category === 'broke' && e.score > userEntries.broke.score).length + 1 : 0,
-                },
-            };
-
-            setLeaderboardData(processedData);
+        // Find user's entries for each category
+        const userEntries = {
+            bluechip: entries.find(entry => entry.category === 'bluechip' && entry.username === username),
+            degen: entries.find(entry => entry.category === 'degen' && entry.username === username),
+            broke: entries.find(entry => entry.category === 'broke' && entry.username === username),
         };
 
-        fetchLeaderboardData();
+        // Update user scores based on found entries
+        setUserScores({
+            bluechip: userEntries.bluechip ? {
+                score: userEntries.bluechip.score,
+                rank: entries.filter(e => e.category === 'bluechip' && e.score > userEntries.bluechip.score).length + 1,
+                comment: userEntries.bluechip.comment
+            } : null,
+            degen: userEntries.degen ? {
+                score: userEntries.degen.score,
+                rank: entries.filter(e => e.category === 'degen' && e.score > userEntries.degen.score).length + 1,
+                comment: userEntries.degen.comment
+            } : null,
+            broke: userEntries.broke ? {
+                score: userEntries.broke.score,
+                rank: entries.filter(e => e.category === 'broke' && e.score > userEntries.broke.score).length + 1,
+                comment: userEntries.broke.comment
+            } : null,
+        });
+
+        // Process entries for each category
+        const processedData: LeaderboardData = {
+            bluechip: {
+                leaders: entries
+                    .filter(entry => entry.category === 'bluechip')
+                    .sort((a, b) => b.score - a.score)
+                    .slice(0, 3)
+                    .map((entry, index) => ({
+                        username: entry.username,
+                        score: entry.score,
+                        rank: index + 1,
+                        comment: entry.comment,
+                        fid: entry.fid,
+                        category: entry.category,
+                        wallet_address: entry.wallet_address
+                    })),
+                yourScore: userEntries.bluechip?.score || 0,
+                yourRank: userEntries.bluechip ? entries.filter(e => e.category === 'bluechip' && e.score > userEntries.bluechip.score).length + 1 : 0,
+            },
+            degen: {
+                leaders: entries
+                    .filter(entry => entry.category === 'degen')
+                    .sort((a, b) => b.score - a.score)
+                    .slice(0, 3)
+                    .map((entry, index) => ({
+                        username: entry.username,
+                        score: entry.score,
+                        rank: index + 1,
+                        comment: entry.comment,
+                        fid: entry.fid,
+                        category: entry.category,
+                        wallet_address: entry.wallet_address
+                    })),
+                yourScore: userEntries.degen?.score || 0,
+                yourRank: userEntries.degen ? entries.filter(e => e.category === 'degen' && e.score > userEntries.degen.score).length + 1 : 0,
+            },
+            broke: {
+                leaders: entries
+                    .filter(entry => entry.category === 'broke')
+                    .sort((a, b) => b.score - a.score)
+                    .slice(0, 3)
+                    .map((entry, index) => ({
+                        username: entry.username,
+                        score: entry.score,
+                        rank: index + 1,
+                        comment: entry.comment,
+                        fid: entry.fid,
+                        category: entry.category,
+                        wallet_address: entry.wallet_address
+                    })),
+                yourScore: userEntries.broke?.score || 0,
+                yourRank: userEntries.broke ? entries.filter(e => e.category === 'broke' && e.score > userEntries.broke.score).length + 1 : 0,
+            },
+        };
+
+        setLeaderboardData(processedData);
     }, [username]);
+
+    useEffect(() => {
+        fetchAndProcessLeaderboardData();
+    }, [username, fetchAndProcessLeaderboardData]);
 
     // Refactor and store user context somewhere instead?
     useEffect(() => {
@@ -166,6 +160,9 @@ export default function LeaderboardPage() {
             const context = await sdk.context;
             setUsername(context?.user.username || "");
             setFid(context?.user.fid || 5650);
+
+            const portfolioData = await getPortfolio(walletAddress)
+            setPortfolio(portfolioData)
         };
         if (sdk && !isSDKLoaded) {
             setIsSDKLoaded(true);
@@ -184,17 +181,22 @@ export default function LeaderboardPage() {
         setLoading(true)
         const context = getLeaderboardJudgementPrompt(category, snarkLevels[category])
         const portfolioString = getPortfolioString(portfolio)
-        const message = category === "broke" ? worstTrade : portfolioString;
+        console.log("portfolioString", portfolioString)
+        console.log("context", context)
         try {
             const response = await fetch("/api/chatgpt", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ context, message }),
+                body: JSON.stringify({
+                    context: context,
+                    message: category === "broke" ? worstTrade : portfolioString
+                }),
             });
 
             const data = await response.json();
+            console.log("data", data)
             const { first: score, second: comment } = parseScore(data.response);
 
             // Update Supabase with the new score and comment
@@ -207,55 +209,8 @@ export default function LeaderboardPage() {
                 wallet_address: walletAddress
             });
 
-            // Update leaderboardData with the new score
-            setLeaderboardData(prevData => {
-                if (!prevData) return prevData;
-
-                const categoryData = prevData[category];
-                const newLeaders = [...categoryData.leaders];
-
-                // Create new entry
-                const newEntry = {
-                    username,
-                    score,
-                    comment,
-                    fid: fid.toString(),
-                    rank: 0, // Will be updated below
-                    category, // Add the category field
-                    wallet_address: walletAddress
-                };
-
-                // Insert new entry and sort
-                newLeaders.push(newEntry);
-                newLeaders.sort((a, b) => b.score - a.score);
-
-                // Update ranks and keep top 3
-                newLeaders.forEach((entry, index) => entry.rank = index + 1);
-                const updatedLeaders = newLeaders.slice(0, 3);
-
-                // Calculate your rank
-                const yourRank = newLeaders.findIndex(entry => entry.username === username) + 1;
-
-                // Update userScores
-                setUserScores(prev => ({
-                    ...prev,
-                    [category]: {
-                        score,
-                        rank: yourRank,
-                        comment
-                    }
-                }));
-
-                return {
-                    ...prevData,
-                    [category]: {
-                        ...categoryData,
-                        leaders: updatedLeaders,
-                        yourScore: score,
-                        yourRank: yourRank
-                    }
-                };
-            });
+            // Fetch fresh data from the database
+            await fetchAndProcessLeaderboardData();
 
         } catch (error) {
             console.error("Failed to get AI response:", error);
