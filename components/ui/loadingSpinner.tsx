@@ -7,12 +7,12 @@ const LoadingSpinner = ({ size = 'medium', color = '#3b82f6', text = 'Loading...
     medium: 'w-10 h-10 border-3',
     large: 'w-16 h-16 border-4'
   };
-  
-  const spinnerSize = sizeMap[size] || sizeMap.medium;
-  
+
+  const spinnerSize = sizeMap[size as keyof typeof sizeMap] || sizeMap.medium;
+
   return (
     <div className="flex flex-col items-center justify-center h-full w-full">
-      <div className={`${spinnerSize} rounded-full border-t-transparent animate-spin`} 
+      <div className={`${spinnerSize} rounded-full border-t-transparent animate-spin`}
         style={{ borderColor: `${color} transparent transparent transparent` }}>
       </div>
       {text && <p className="mt-4 text-purple-600">{text}</p>}
@@ -21,7 +21,7 @@ const LoadingSpinner = ({ size = 'medium', color = '#3b82f6', text = 'Loading...
 };
 
 // Page wrapper that shows spinner during page transitions
-const LoadingWrapper = ({ isLoading, children }) => {
+const LoadingWrapper = ({ isLoading, children }: { isLoading: boolean, children: React.ReactNode }) => {
   return isLoading ? (
     <div className="fixed inset-0 bg-gray bg-opacity-80 z-50 flex items-center justify-center">
       <LoadingSpinner />
