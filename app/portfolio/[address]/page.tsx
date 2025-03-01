@@ -157,45 +157,42 @@ export default function PortfolioPage() {
                 <Card className="p-6 bg-gray-800/50 border-gray-700">
                     <div className="space-y-4">
                         <h2 className="text-xl font-bold text-white">Holdings</h2>
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead>
-                                    <tr className="text-left text-gray-400">
-                                        <th className="p-3">Token</th>
-                                        <th className="p-3">Chain</th>
-                                        <th className="p-3">Price</th>
-                                        <th className="p-3">24h Change</th>
-                                        <th className="p-3">Amount</th>
-                                        <th className="p-3">Value</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {portfolio.map((token) => (
-                                        <tr
-                                            key={token.id + token.chain}
-                                            className="border-t border-gray-700 hover:bg-gray-700/30 transition-colors"
-                                        >
-                                            <td className="p-3">
-                                                <Link href={`/research/coins/${token.id}`} className="flex items-center gap-2">
-                                                    <span className="text-white">{token.symbol}</span>
-                                                </Link>
-                                            </td>
-                                            <td className="p-3 text-white">{token.chain}</td>
-                                            <td className="p-3 text-white">${token.price.toLocaleString()}</td>
-                                            <td className={`p-3 flex items-center gap-1 ${token.price_24h_change >= 0 ? "text-green-400" : "text-red-400"}`}>
-                                                {token.price_24h_change >= 0 ? (
-                                                    <ArrowUpIcon className="w-4 h-4" />
-                                                ) : (
-                                                    <ArrowDownIcon className="w-4 h-4" />
-                                                )}
-                                                {Math.abs(token.price_24h_change)}%
-                                            </td>
-                                            <td className="p-3 text-white">{token.amount.toLocaleString()}</td>
-                                            <td className="p-3 text-white">${(token.price * token.amount).toLocaleString()}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                        <div className="grid gap-4">
+                            {portfolio.map((token) => (
+                                <div
+                                    key={token.id + token.chain}
+                                    className="p-4 rounded-lg bg-gray-700/30 border border-gray-700"
+                                >
+                                    <div className="flex justify-between items-center mb-2">
+                                        <Link href={`/research/coins/${token.id}`} className="text-lg font-medium text-white">
+                                            {token.symbol}
+                                        </Link>
+                                        <span className="text-white font-bold">
+                                            ${(token.price * token.amount).toLocaleString()}
+                                        </span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                        <div className="text-gray-400">Chain</div>
+                                        <div className="text-white text-right">{token.chain}</div>
+
+                                        <div className="text-gray-400">Price</div>
+                                        <div className="text-white text-right">${token.price.toLocaleString()}</div>
+
+                                        <div className="text-gray-400">24h Change</div>
+                                        <div className={`flex items-center justify-end gap-1 ${token.price_24h_change >= 0 ? "text-green-400" : "text-red-400"}`}>
+                                            {token.price_24h_change >= 0 ? (
+                                                <ArrowUpIcon className="w-4 h-4" />
+                                            ) : (
+                                                <ArrowDownIcon className="w-4 h-4" />
+                                            )}
+                                            {Math.abs(token.price_24h_change * 100).toFixed(2)}%
+                                        </div>
+
+                                        <div className="text-gray-400">Amount</div>
+                                        <div className="text-white text-right">{token.amount.toLocaleString()}</div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </Card>

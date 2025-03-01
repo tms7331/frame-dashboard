@@ -200,9 +200,10 @@ export async function getNewsByUsername(username: string): Promise<NewsItem[]> {
 }
 
 export async function upsertNewsItem(tag: string, content: string, username: string): Promise<NewsItem> {
+    const write_timestamp = new Date().toISOString();
     const { data, error } = await supabase
         .from('news')
-        .upsert({ tag, content, username }, { onConflict: 'tag,username' })
+        .upsert({ tag, content, username, write_timestamp }, { onConflict: 'tag,username' })
         .single();
 
     if (error) {

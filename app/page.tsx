@@ -87,6 +87,8 @@ async function getHistoricalPrices(
 const isDataStale = (timestamp: string) => {
   const writeTime = new Date(timestamp).getTime();
   const oneHourAgo = Date.now() - 60 * 60 * 1000;
+  console.log("STALE DATA CHECK", writeTime, oneHourAgo)
+  console.log("IS STALE?", writeTime < oneHourAgo)
   return writeTime < oneHourAgo;
 };
 
@@ -243,11 +245,6 @@ export default function FarcasterFrame() {
       <div className="container px-4 space-y-8 pt-4">
         <div className="flex flex-col items-center text-center space-y-4">
           <h1 className="text-3xl md:text-5xl font-bold tracking-tighter text-white">PulseBoardAI</h1>
-          <p>{JSON.stringify(userContext, null, 2)}</p>
-          <div className="flex gap-2">
-            <span>Address:</span>
-            <code>{address}</code>
-          </div>
         </div>
 
         {/* Chart Section */}
