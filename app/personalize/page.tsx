@@ -5,19 +5,21 @@ import { MobileNav } from "@/components/mobile-nav"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { fetchUserInterests } from "@/lib/market-service"
-
+import { getUserPrompt, upsertUserPrompt } from "@/lib/supabaseClient"
+import sdk from "@farcaster/frame-sdk"
 export default function PersonalizePage() {
     const [inputText, setInputText] = useState("")
     const [loading, setLoading] = useState(false)
-    const [lastUpdated, setLastUpdated] = useState<string | null>(null)
+    const [username, setUsername] = useState("-")
 
     useEffect(() => {
         const loadData = async () => {
             try {
-                const interests = await fetchUserInterests()
-                setInputText(interests.interests)
-                setLastUpdated(interests.lastUpdated)
+                const context = await sdk.context;
+                const ctxUsername = context?.user.username || ""
+                setUsername(ctxUsername)
+                const userPrompt = await getUserPrompt(ctxUsername)
+                setInputText(userPrompt?.prompt || "")
             } catch (error) {
                 console.error("Error loading data:", error)
             }
@@ -25,11 +27,18 @@ export default function PersonalizePage() {
         loadData()
     }, [])
 
-    const handleSave = () => {
+    const handleSave = async () => {
+        if (!username) return; // Prevent saving if username is empty
         setLoading(true)
         try {
-            setLastUpdated(new Date().toISOString())
+            await upsertUserPrompt(
+                username,
+                inputText
+            )
             alert("Areas of interest updated successfully!")
+        } catch (error) {
+            console.error("Error saving data:", error)
+            alert("Failed to save changes")
         } finally {
             setLoading(false)
         }
@@ -48,9 +57,6 @@ export default function PersonalizePage() {
                         <div className="flex justify-between items-start">
                             <div>
                                 <h2 className="text-2xl font-bold text-white">Areas of Interest</h2>
-                                {lastUpdated && (
-                                    <p className="text-sm text-gray-400">Last updated: {new Date(lastUpdated).toLocaleString()}</p>
-                                )}
                             </div>
                         </div>
                         <div className="flex gap-4">
@@ -62,12 +68,15 @@ export default function PersonalizePage() {
                             />
                             <Button
                                 onClick={handleSave}
-                                disabled={loading}
+                                disabled={loading || !username}
                                 className="bg-purple-500 hover:bg-purple-600 whitespace-nowrap"
                             >
                                 Save
                             </Button>
                         </div>
+                        {!username && (
+                            <p className="text-sm text-yellow-400">Use in Warpcast to personalize prompt</p>
+                        )}
                     </div>
                 </Card>
             </div>

@@ -5,6 +5,12 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 
+export interface UserPrompt {
+    id?: number;        // Optional auto-generated ID
+    username: string;
+    prompt: string;
+}
+
 export interface LeaderboardEntry {
     id?: number;
     category: string;
@@ -91,6 +97,34 @@ export async function upsertLeaderboardEntry(entry: LeaderboardEntry) {
     if (error) {
         throw error;
     }
+    return data;
+}
+
+
+export async function getUserPrompt(username: string): Promise<UserPrompt | null> {
+    const { data, error } = await supabase
+        .from('user_prompts')
+        .select('*')
+        .eq('username', username)
+        .maybeSingle();
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+}
+
+export async function upsertUserPrompt(username: string, prompt: string): Promise<UserPrompt> {
+    const { data, error } = await supabase
+        .from('user_prompts')
+        .upsert({ username, prompt }, { onConflict: 'username' })
+        .single();
+
+    if (error) {
+        throw error;
+    }
+
     return data;
 }
 

@@ -13,7 +13,7 @@ import {
   Legend,
 } from "chart.js"
 import { fetchChartData } from "./data-service"
-import { getTopEntryForEachCategory, getAllNews } from "@/lib/supabaseClient"
+import { getTopEntryForEachCategory, getAllNews, getUserPrompt } from "@/lib/supabaseClient"
 import type { ChartData, LeaderboardEntry, NewsItem } from "@/lib/types"
 import { MobileNav } from "@/components/mobile-nav"
 import sdk, {
@@ -149,6 +149,9 @@ export default function FarcasterFrame() {
   useEffect(() => {
     const load = async () => {
       setUserContext(await sdk.context);
+      const username = userContext?.user.username || ""
+      const userPrompt = await getUserPrompt(username)
+      console.log("userPrompt", userPrompt)
       sdk.actions.ready();
     };
     if (sdk && !isSDKLoaded) {
