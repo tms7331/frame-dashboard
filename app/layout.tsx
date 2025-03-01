@@ -25,14 +25,14 @@ export const metadata: Metadata = {
   other: {
     "fc:frame": JSON.stringify({
       version: "next",
-      imageUrl: `${appUrl}/placeholder.png`,
+      imageUrl: `${appUrl}/pulseboardpage.png`,
       button: {
         title: "Launch PulseBoardAI",
         action: {
           type: "launch_frame",
           name: "PulseBoardAI Frame",
           url: appUrl,
-          splashImageUrl: `${appUrl}/placeholder.png`,
+          splashImageUrl: `${appUrl}/splash.png`,
           splashBackgroundColor: "#f7f7f7",
         },
       },
