@@ -1,3 +1,6 @@
+export type LeaderboardCategory = "bluechip" | "degen" | "broke"
+export type SnarkLevel = "belligerent" | "passive_aggressive" | "euphoric"
+
 export type DebankToken = {
     id: string
     chain: string

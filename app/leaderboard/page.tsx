@@ -6,17 +6,17 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
-import type { LeaderboardData, LeaderboardEntry } from "@/lib/types"
+import type { LeaderboardData, LeaderboardEntry, SnarkLevel, LeaderboardCategory, DebankToken } from "@/lib/types"
 import { getAllLeaderboardEntries, upsertLeaderboardEntry, dumpDummyLeaderboardEntries } from "@/lib/supabaseClient"
 import sdk, { type Context } from "@farcaster/frame-sdk"
+import { getLeaderboardJudgementPrompt } from "@/lib/prompts"
+import { getPortfolio, getPortfolioString } from "@/lib/portfolioData"
 
 const SNARK_LEVELS = [
     { value: "belligerent", label: "Belligerent" },
     { value: "passive_aggressive", label: "Passive Aggressive" },
     { value: "euphoric", label: "Euphoric" },
 ] as const
-
-type SnarkLevel = (typeof SNARK_LEVELS)[number]["value"]
 
 type UserScore = {
     score: number
@@ -25,7 +25,7 @@ type UserScore = {
 } | null
 
 export default function LeaderboardPage() {
-    const [username, setUsername] = useState("user99")
+    const [username, setUsername] = useState("")
     const [leaderboardData, setLeaderboardData] = useState<LeaderboardData | null>(null)
     const [worstTrade, setWorstTrade] = useState("")
     const [loading, setLoading] = useState(false)
@@ -40,9 +40,15 @@ export default function LeaderboardPage() {
         broke: "belligerent",
     })
     const [isSDKLoaded, setIsSDKLoaded] = useState(false)
-    const [userContext, setUserContext] = useState<Context.FrameContext>()
+    const [portfolio, setPortfolio] = useState<DebankToken[]>([])
 
     useEffect(() => {
+        const fetchPortfolio = async () => {
+            const portfolio = await getPortfolio(username)
+            setPortfolio(portfolio)
+        }
+        fetchPortfolio()
+
         const fetchLeaderboardData = async () => {
             // await dumpDummyLeaderboardEntries();
             const entries = await getAllLeaderboardEntries();
@@ -144,12 +150,12 @@ export default function LeaderboardPage() {
         }))
     }
 
-    const handleJudgeMe = async (category: string) => {
+    const handleJudgeMe = async (category: LeaderboardCategory) => {
         setLoading(true)
+        const context = getLeaderboardJudgementPrompt(category, snarkLevels[category])
+        const portfolioString = getPortfolioString(portfolio)
+        const message = category === "broke" ? worstTrade : portfolioString;
         try {
-            const context = `You are judging someone's crypto portfolio. Be ${snarkLevels[category]} in your response. Keep your response under 100 characters.`;
-            const message = category === "broke" ? worstTrade : "ETH: 43";
-
             const response = await fetch("/api/chatgpt", {
                 method: "POST",
                 headers: {
@@ -227,7 +233,7 @@ export default function LeaderboardPage() {
 
     if (!leaderboardData) return null
 
-    const renderCategory = (title: string, category: keyof typeof userScores) => {
+    const renderCategory = (title: string, category: LeaderboardCategory) => {
         const data = leaderboardData[category]
         const userScore = userScores[category]
         const isBroke = category === "broke"

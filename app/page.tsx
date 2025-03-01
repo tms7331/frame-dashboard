@@ -12,7 +12,6 @@ import {
   Tooltip,
   Legend,
 } from "chart.js"
-import { fetchChartData } from "./data-service"
 import { getTopEntryForEachCategory, getAllNews, getUserPrompt } from "@/lib/supabaseClient"
 import type { ChartData, LeaderboardEntry, NewsItem } from "@/lib/types"
 import { MobileNav } from "@/components/mobile-nav"
@@ -25,9 +24,7 @@ import sdk, {
 // import { createStore } from 'mipd'
 import { useAccount } from "wagmi";
 
-
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
-
 
 type HistoricalPriceData = {
   prices: [number, number][]; // Array of [timestamp, price]
@@ -56,9 +53,6 @@ async function getHistoricalPrices(
     return [];
   }
 }
-
-
-
 
 export default function FarcasterFrame() {
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
@@ -148,8 +142,9 @@ export default function FarcasterFrame() {
 
   useEffect(() => {
     const load = async () => {
-      setUserContext(await sdk.context);
-      const username = userContext?.user.username || ""
+      const userContext_ = await sdk.context;
+      setUserContext(userContext_);
+      const username = userContext_?.user.username || ""
       const userPrompt = await getUserPrompt(username)
       console.log("userPrompt", userPrompt)
       sdk.actions.ready();
@@ -166,7 +161,7 @@ export default function FarcasterFrame() {
 
       <div className="container px-4 space-y-8 pt-4">
         <div className="flex flex-col items-center text-center space-y-4">
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tighter text-white">Frashboard</h1>
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tighter text-white">PulseBoardAI</h1>
           <p>{JSON.stringify(userContext, null, 2)}</p>
           <div className="flex gap-2">
             <span>Address:</span>
