@@ -23,6 +23,8 @@ import sdk, {
 } from "@farcaster/frame-sdk";
 // import { createStore } from 'mipd'
 import { useAccount } from "wagmi";
+import { useSetAtom } from 'jotai'
+import { walletAddressAtom, profileImageAtom } from '@/lib/atoms'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
@@ -63,6 +65,8 @@ export default function FarcasterFrame() {
   const [news, setNews] = useState<NewsItem[]>([])
 
   const { address, isConnected } = useAccount();
+  const setWalletAddress = useSetAtom(walletAddressAtom)
+  const setProfileImage = useSetAtom(profileImageAtom)
 
   useEffect(() => {
     const loadData = async () => {
@@ -141,11 +145,25 @@ export default function FarcasterFrame() {
   }
 
   useEffect(() => {
+    if (address) {
+      // Truncate the address to the first 6 and last 4 characters
+      const truncatedAddress = address.slice(0, 6) + "..." + address.slice(-4)
+      setWalletAddress(truncatedAddress)
+    }
+  }, [address, setWalletAddress])
+
+  useEffect(() => {
     const load = async () => {
       const userContext_ = await sdk.context;
       setUserContext(userContext_);
       const username = userContext_?.user.username || ""
       const userPrompt = await getUserPrompt(username)
+
+      // Set profile image if available in userContext
+      if (userContext_?.user.pfpUrl) {
+        setProfileImage(userContext_.user.pfpUrl)
+      }
+
       console.log("userPrompt", userPrompt)
       sdk.actions.ready();
     };
@@ -153,7 +171,7 @@ export default function FarcasterFrame() {
       setIsSDKLoaded(true);
       load();
     }
-  }, [isSDKLoaded]);
+  }, [isSDKLoaded, setProfileImage]);
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900">

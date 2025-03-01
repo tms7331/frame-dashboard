@@ -1,15 +1,18 @@
 import Link from "next/link"
 import Image from "next/image"
-
-const WALLET_ADDRESS = "0x1234...5678" // This would come from your wallet connection
+import { useAtomValue } from 'jotai'
+import { walletAddressAtom, profileImageAtom } from '@/lib/atoms'
 
 const bottomNavItems = [
-    { name: "Home", href: "/" },
+    { name: "News", href: "/" },
     { name: "Portfolio", href: "/portfolio" },
     { name: "Leaderboard", href: "/leaderboard" },
 ]
 
 export function MobileNav() {
+    const walletAddress = useAtomValue(walletAddressAtom)
+    const profileImage = useAtomValue(profileImageAtom)
+
     return (
         <div className="w-full bg-gray-900/80 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-700">
             {/* Top Row */}
@@ -22,10 +25,10 @@ export function MobileNav() {
                 </Link>
 
                 <div className="flex items-center gap-3">
-                    <span className="text-gray-300 font-mono text-xs">{WALLET_ADDRESS}</span>
+                    <span className="text-gray-300 font-mono text-xs">{walletAddress}</span>
                     <button className="w-6 h-6 rounded-full overflow-hidden border border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-1 focus:ring-offset-gray-900">
                         <Image
-                            src="/placeholder.svg?height=24&width=24"
+                            src={profileImage}
                             alt="Profile"
                             width={24}
                             height={24}
