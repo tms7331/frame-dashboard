@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Line } from "react-chartjs-2"
 import {
   Chart as ChartJS,
@@ -104,6 +104,10 @@ export default function FarcasterFrame() {
   const [leaders, setLeaders] = useState<LeaderboardEntry[]>([])
   const [news, setNews] = useState<NewsItem[]>([])
 
+  const [notificationDetails, setNotificationDetails] =
+    useState<FrameNotificationDetails | null>(null);
+  const [addFrameResult, setAddFrameResult] = useState("");
+
   const { address, isConnected } = useAccount();
   const setWalletAddress = useSetAtom(walletAddressAtom)
   const setProfileImage = useSetAtom(profileImageAtom)
@@ -178,6 +182,35 @@ export default function FarcasterFrame() {
     },
   }
 
+  const addFrame = useCallback(async () => {
+    console.log("adding frame...")
+    try {
+      setNotificationDetails(null);
+
+      const result = await sdk.actions.addFrame();
+
+      if (result.notificationDetails) {
+        setNotificationDetails(result.notificationDetails);
+      }
+      setAddFrameResult(
+        result.notificationDetails
+          ? `Added, got notificaton token ${result.notificationDetails.token} and url ${result.notificationDetails.url}`
+          : "Added, got no notification details"
+      );
+    } catch (error) {
+      if (error instanceof AddFrame.RejectedByUser) {
+        setAddFrameResult(`Not added: ${error.message}`);
+      }
+
+      if (error instanceof AddFrame.InvalidDomainManifest) {
+        setAddFrameResult(`Not added: ${error.message}`);
+      }
+
+      setAddFrameResult(`Error: ${error}`);
+    }
+  }, []);
+
+
   useEffect(() => {
     const load = async () => {
       const userContext_ = await sdk.context;
@@ -185,8 +218,7 @@ export default function FarcasterFrame() {
       const username = userContext_?.user.username || "";
       const userPrompt = await getUserPrompt(username);
 
-      const result = await sdk.actions.addFrame();
-      console.log("result", result)
+      await addFrame();
 
       let newsData: NewsItem[];
       if (!userPrompt) {
